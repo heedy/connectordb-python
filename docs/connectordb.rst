@@ -1,3 +1,4 @@
+===================
 Core API Reference
 ===================
 
@@ -13,7 +14,7 @@ The ConnectorDB object is the API main entrance point, and it inherits from Devi
     print cdb.path
 
 ConnectorObject
-===============
+++++++++++++++++
 
 .. automodule:: connectordb._connectorobject
     :members:
@@ -21,7 +22,7 @@ ConnectorObject
     :show-inheritance:
 
 ConnectorDB
-============
+++++++++++++++++
     
 .. automodule:: connectordb._connectordb
     :members:
@@ -29,14 +30,14 @@ ConnectorDB
     :show-inheritance:
 
 User
-====
+++++++++++++++++
 .. automodule:: connectordb._user
     :members:
     :undoc-members:
     :show-inheritance:
     
 Device
-========
+++++++++++++++++
 
 .. automodule:: connectordb._device
     :members:
@@ -44,7 +45,7 @@ Device
     :show-inheritance:
     
 Stream
-========
+++++++++++++++++
 .. automodule:: connectordb._stream
     :members:
     :undoc-members:
