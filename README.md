@@ -1,4 +1,4 @@
-[![Documentation Status](https://readthedocs.org/projects/connectordb-python/badge/?version=latest)](https://readthedocs.org/projects/connectordb-python/?badge=latest)
+[Read the full documentation here](http://connectordb-python.readthedocs.org/en/latest/)
 
 ConnectorDB Python Interface
 =====
