@@ -2,7 +2,22 @@
 
 """The official python client for ConnectorDB.
 
-The client enables quick usage of the database for IoT stuff and data analysis.
+The client enables quick usage of the database for IoT stuff and data analysis::
+
+	import time
+	import connectordb
+
+	cdb = connectordb.ConnectorDB("apikey")
+
+	temp = cdb["temperature"]
+
+	if not temp.exists():
+		temp.create({"type": "number"})
+
+	while True:
+		time.sleep(1)
+		t = get_temperature()
+		temp.insert(t)
 
 """
 

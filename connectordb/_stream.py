@@ -18,21 +18,30 @@ class Stream(ConnectorObject):
 	def insert_array(self,datapoint_array, restamp = False):
 		"""given an array of datapoints, inserts them to the stream. This is different from insert(),
 		because it requires an array of valid datapoints, whereas insert only requires the data portion
-		of the datapoint, and fills out the rest."""
+		of the datapoint, and fills out the rest::
+
+			s = cdb["mystream"]
+			s.create({"type": "number"})
+
+			s.insert_array([{"d": 4, "t": time.time()},{"d": 5, "t": time.time()}], restamp=False)
+
+		The optional `restamp` parameter specifies whether or not the database should rewrite the timestamps
+		of datapoints which have a timestamp that is less than one that already exists in the database.
+		"""
 		if restamp:
 			self.db.update(self.path+"/data",datapoint_array)
 		else:
 			self.db.create(self.path+"/data",datapoint_array)
 
 	def insert(self,data):
-		"""insert inserts one datapoint with the given data, and appends it to the end of the stream.
+		"""insert inserts one datapoint with the given data, and appends it to
+		the end of the stream::
 
-			stream[-5:]	#Returns the most recent 5 datapoints from the stream
+			s = cdb["mystream"]
 
-			stream[:] #Returns all the data the stream holds.
+			s.create({"type": "string"})
 
-		In order to perform transforms on the stream and to aggreagate data, look at __call__,
-		which allows getting index ranges along with a transform.
+			s.insert("Hello World!")
 
 		"""
 		self.insert_array([{"d": data}], restamp=True)
@@ -40,7 +49,7 @@ class Stream(ConnectorObject):
 
 	def __call__(self,t1=None, t2=None, limit=None, i1=None, i2=None, transform=None):
 		"""By calling the stream as a function, you can query it by either time range or index,
-		and further you can perform a custom transform on the stream
+		and further you can perform a custom transform on the stream::
 
 			#Returns all datapoints with their data < 50 from the past minute
 			stream(t1=time.time()-60, transform="if $ < 50")
@@ -76,7 +85,18 @@ class Stream(ConnectorObject):
 		return self.db.read(self.path + "/data",params).json()
 
 	def __getitem__(self,getrange):
-		"""Allows accessing the stream just as if it were just one big python array."""
+		"""Allows accessing the stream just as if it were just one big python array.
+		An example::
+
+			#Returns the most recent 5 datapoints from the stream
+			stream[-5:]
+
+			#Returns all the data the stream holds.
+			stream[:]
+
+		In order to perform transforms on the stream and to aggreagate data, look at __call__,
+		which allows getting index ranges along with a transform.
+		"""
 		if not isinstance(getrange, slice):
 			#Return the single datapoint
 			return self(i1=getrange,i2=getrange+1)[0]

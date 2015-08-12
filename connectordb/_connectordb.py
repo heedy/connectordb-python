@@ -14,6 +14,18 @@ from _user import User
 from _stream import Stream
 
 class ConnectorDB(Device):
+	"""ConnectorDB is the main entry point for any application that uses the python API.
+	The class accepts both a username and password in order to log in as a user, and accepts an apikey
+	when logging in directly from a device::
+
+		import connectordb
+		cdb = connectordb.ConnectorDB("myusername","mypassword")
+
+		#prints "myusername/user" - logging in by username/password combo
+		#logs in as the user device.
+		print cdb.path
+
+	"""
 	def __init__(self,user_or_apikey,user_password=None,url="https://connectordb.com"):
 
 		db = DatabaseConnection(user_or_apikey,user_password,url)
@@ -52,7 +64,23 @@ class ConnectorDB(Device):
 
 	def info(self):
 		"""returns a dictionary of information about the database, including the database version, the transforms
-		and the interpolators supported"""
+		and the interpolators supported::
+
+			>>>cdb = connectordb.ConnectorDB(apikey)
+			>>>cdb.info()
+			{
+				"version": "0.3.0",
+				"transforms": {
+					"sum": {"description": "Returns the sum of all the datapoints that go through the transform"}
+					...
+				},
+				"interpolators": {
+					"closest": {"description": "Uses the datapoint closest to the interpolation timestamp"}
+					...
+				}
+			}
+
+		"""
 		return {
 			"version": self.db.get("meta/version").text,
 			"transforms": self.db.get("meta/transforms").json(),
