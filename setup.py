@@ -10,11 +10,5 @@ setup(name='ConnectorDB',
       author='ConnectorDB team',
       author_email='support@connectordb.com',
       url='http://connectordb.com',
-      packages=['connectordb'],
-      install_requires=[
-          "jsonschema",
-          "requests",
-          "websocket-client",
-          "apsw"
-          ]
+      packages=['connectordb']
      )
