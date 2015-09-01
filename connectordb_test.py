@@ -4,7 +4,7 @@ import connectordb
 
 from jsonschema import SchemaError
 
-TEST_URL = "192.168.137.192:8000"
+TEST_URL = "localhost:8000"
 
 class TestConnectorDB(unittest.TestCase):
 	def setUp(self):
