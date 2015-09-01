@@ -104,11 +104,11 @@ class TestConnectorDB(unittest.TestCase):
 
 	def test_device(self):
 		db = self.usrdb
-		self.assertEqual(len(db.user.devices()),1)
+		self.assertEqual(len(db.user.devices()),2)
 		self.assertFalse(db.user["mydevice"].exists())
 		db.user["mydevice"].create()
 		self.assertTrue(db.user["mydevice"].exists())
-		self.assertEqual(2,len(db.user.devices()))
+		self.assertEqual(3,len(db.user.devices()))
 
 		dev = connectordb.ConnectorDB(db.user["mydevice"].apikey, url=TEST_URL)
 		self.assertEqual(1,len(dev.user.devices()))	#Device has no access to other devices
@@ -171,6 +171,7 @@ class TestConnectorDB(unittest.TestCase):
 		s.ephemeral = False
 
 		s.insert("1")
+		time.sleep(0.1)
 		s.insert_array([{"d": "2","t": time.time()-0.01},{"d": "3"}])
 
 		self.assertEqual("3",s[-1]["d"])
