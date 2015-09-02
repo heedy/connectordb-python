@@ -1,27 +1,24 @@
 # -*- coding: utf-8 -*-
-
 """The official python client for ConnectorDB.
 
 The client enables quick usage of the database for IoT stuff and data analysis::
 
-	import time
-	import connectordb
+    import time
+    import connectordb
 
-	cdb = connectordb.ConnectorDB("apikey")
+    cdb = connectordb.ConnectorDB("apikey")
 
-	temp = cdb["temperature"]
+    temp = cdb["temperature"]
 
-	if not temp.exists():
-		temp.create({"type": "number"})
+    if not temp.exists():
+        temp.create({"type": "number"})
 
-	while True:
-		time.sleep(1)
-		t = get_temperature()
-		temp.insert(t)
+    while True:
+        time.sleep(1)
+        t = get_temperature()
+        temp.insert(t)
 
 """
-
-
 
 from _connectordb import *
 from _connection import AuthenticationError, ServerError
