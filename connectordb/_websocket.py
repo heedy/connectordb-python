@@ -42,8 +42,8 @@ class WebsocketHandler(object):
         extractor = auth_extractor()
         basic_auth(extractor)
         self.headers = []
-        for header in extractor:
-            self.headers.append("%s: %s" % (header, extractor[header]))
+        for header in extractor.headers:
+            self.headers.append("%s: %s" % (header, extractor.headers[header]))
 
         # Set up the variable which will hold all of the subscriptions
         self.subscriptions = {}
@@ -96,6 +96,8 @@ class WebsocketHandler(object):
 
     def subscribe(self, stream, callback, transform=""):
         """Given a stream, a callback and an optional transform, sets up the subscription"""
+        if self.status == "disconnected":
+            self.connect()
         if self.status is not "connected":
             return False
         logging.debug("Subscribing to %s", stream)
@@ -115,8 +117,13 @@ class WebsocketHandler(object):
              "arg": stream,
              "transform": transform})
 
-        with self.subscription_lock:
-            del self.subscriptions[stream + ":" + transform]
+        self.subscription_lock.acquire()
+        del self.subscriptions[stream + ":" + transform]
+        if len(self.subscriptions) is 0:
+            self.subscription_lock.release()
+            self.disconnect()
+        else:
+            self.subscription_lock.release()
 
     def connect(self):
         """Attempt to connect to the websocket - and returns either True or False depending on if
@@ -237,16 +244,16 @@ class WebsocketHandler(object):
         logging.debug("ConnectorDB:WS: Msg '%s'", msg["stream"])
 
         # Build the subcription key
-        stream_key = msg["stream"]
-        if "threading" in msg:
-            stream_key += ":" + msg["transform"]
+        stream_key = msg["stream"] + ":"
+        if "transform" in msg:
+            stream_key += msg["transform"]
 
         self.subscription_lock.acquire()
         if stream_key in self.subscriptions:
             subscription_function = self.subscriptions[stream_key]
             self.subscription_lock.release()
 
-            fresult = subscription_function(stream_key, msg["data"])
+            fresult = subscription_function(msg["stream"], msg["data"])
 
             if fresult is True:
                 # This is a special result - if the subscription function of a downlink returns True,
@@ -260,8 +267,9 @@ class WebsocketHandler(object):
                 self.insert(msg["stream"][:-9], fresult)
         else:
             self.subscription_lock.release()
-            logging.warn("ConnectorDB:WS: Msg '%s' not subscribed!",
-                         msg["stream"])
+            logging.warn(
+                "ConnectorDB:WS: Msg '%s' not subscribed! Subscriptions: %s",
+                msg["stream"], self.subscriptions.keys())
 
     def __on_ping(self, ws, data):
         """The server periodically sends us websocket ping messages to keep the connection alive. To
