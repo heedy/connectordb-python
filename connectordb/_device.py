@@ -9,7 +9,7 @@ import _stream
 class Device(ConnectorObject):
     def create(self):
         """Creates the device."""
-        self.metadata = self.db.create(self.path)
+        self.metadata = self.db.create(self.path).json()
 
     def streams(self):
         """Returns the list of streams that belong to the device"""

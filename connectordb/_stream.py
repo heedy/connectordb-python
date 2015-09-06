@@ -13,7 +13,7 @@ class Stream(ConnectorObject):
     def create(self, schema):
         """Creates a stream given a JSON schema encoded as a python dict"""
         Draft4Validator.check_schema(schema)
-        self.metadata = self.db.create(self.path, schema)
+        self.metadata = self.db.create(self.path, schema).json()
 
     def insert_array(self, datapoint_array, restamp=False):
         """given an array of datapoints, inserts them to the stream. This is different from insert(),

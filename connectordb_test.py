@@ -14,9 +14,10 @@ TEST_URL = "localhost:8000"
 
 
 class subscriber:
-    #Special class that allows tests of subscriptions
+    # Special class that allows tests of subscriptions
     def __init__(self):
         self.reset()
+        self.returnvalue = None
 
     def reset(self):
         self.msg = None
@@ -26,6 +27,8 @@ class subscriber:
         logging.info("Got message: %s:: %s", stream, json.dumps(datapoints))
         self.msg = datapoints
         self.stream = stream
+
+        return self.returnvalue
 
 
 class TestConnectorDB(unittest.TestCase):
@@ -289,3 +292,40 @@ class TestConnectorDB(unittest.TestCase):
 
         self.assertTrue(subs2.msg is None)
         self.assertTrue(subs.msg[0]["d"] == 900)
+
+        s.ephemeral = True
+        subs.reset()
+        s.insert(101)
+        time.sleep(0.1)
+        self.assertTrue(subs.msg[0]["d"] == 101)
+
+    def test_downlink(self):
+        mydevice = self.usrdb.user["mydevice"]
+
+        mydevice.create()
+        print mydevice
+        print mydevice.data
+        print mydevice.apikey
+        s = mydevice["mystream"]
+        mdconn = connectordb.ConnectorDB(mydevice.apikey, url=TEST_URL)
+
+        mds = mdconn["mystream"]
+        mds.create({"type": "string"})
+        mds.downlink = True
+
+        subs = subscriber()
+        subs.returnvalue = True
+        subs2 = subscriber()
+
+        mds.subscribe(subs.subscribe_callback, downlink=True)
+        s.subscribe(subs2.subscribe_callback)
+
+        time.sleep(0.1)
+        s.insert("hello!")
+        time.sleep(0.1)
+
+        self.assertTrue(subs.msg[0]["d"] == "hello!")
+        self.assertTrue(subs2.msg[0]["d"] == "hello!")
+
+        mds.unsubscribe(downlink=True)
+        s.unsubscribe()

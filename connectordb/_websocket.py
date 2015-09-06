@@ -279,9 +279,10 @@ class WebsocketHandler(object):
         self.lastpingtime = time.time()
 
     def __ensure_ping(self):
-        """Each time the server sends a ping message, we record the tiemstamp. If we haven't received a ping
+        """Each time the server sends a ping message, we record the timestamp. If we haven't received a ping
         within the given interval, then we assume that the connection was lost, close the websocket and
         attempt to reconnect"""
+
         logging.debug("ConnectorDB:WS: pingcheck")
         if (time.time() - self.lastpingtime > self.connection_ping_timeout):
             logging.warn("ConnectorDB:WS: Websocket ping timed out!")
@@ -293,3 +294,7 @@ class WebsocketHandler(object):
                                              self.__ensure_ping)
             self.pingtimer.daemon = True
             self.pingtimer.start()
+
+    def __del__(self):
+        """Make sure that all threads shut down when needed"""
+        self.disconnect()
