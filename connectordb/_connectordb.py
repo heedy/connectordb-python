@@ -6,6 +6,8 @@ from _device import Device
 from _user import User
 from _stream import Stream
 
+CONNECTORDB_URL = "https://connectordb.com"
+
 
 class ConnectorDB(Device):
     """ConnectorDB is the main entry point for any application that uses the python API.
@@ -20,7 +22,7 @@ class ConnectorDB(Device):
         print cdb.path
 
     """
-    def __init__(self, user_or_apikey, user_password=None, url="https://connectordb.com"):
+    def __init__(self, user_or_apikey, user_password=None, url=CONNECTORDB_URL):
 
         db = DatabaseConnection(user_or_apikey, user_password, url)
 
@@ -85,3 +87,7 @@ class ConnectorDB(Device):
 
     def __repr__(self):
         return "[ConnectorDB:%s]" % (self.path, )
+
+    def ping(self):
+        """Pings the ConnectorDB server. Useful for checking if the connection is valid"""
+        return self.db.ping()
