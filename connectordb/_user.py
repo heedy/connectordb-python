@@ -8,9 +8,9 @@ import _device
 class User(ConnectorObject):
     def create(self, email, password):
         """Creates the given user - using the passed in email and password"""
-        self.metadata = self.db.create(self.path,
-                                       {"email": email,
-                                        "password": password})
+        self.metadata = self.db.create(
+            self.path, {"email": email,
+                        "password": password}).json()
 
     def set_password(self, new_password):
         """Sets a new password for the user"""

@@ -6,6 +6,8 @@ from requests.auth import HTTPBasicAuth
 
 import json
 
+from _websocket import WebsocketHandler
+
 # The subpath to the Create Read Update Delete portion of the API
 CRUD_PATH = "crud/"
 
@@ -50,6 +52,9 @@ class DatabaseConnection(object):
         self.r = Session()
         self.r.auth = auth
         self.r.headers.update({'content-type': 'application/json'})
+
+        # Prepare the websocket
+        self.ws = WebsocketHandler(self.url, auth)
 
     def close(self):
         """Closes the active connections to ConnectorDB"""
@@ -123,3 +128,15 @@ class DatabaseConnection(object):
         """Sends a get request to the given path in the database and with optional URL parameters"""
         return self.handleresult(self.r.get(urljoin(self.url, path),
                                             params=params))
+
+    def subscribe(self, stream, callback, transform=""):
+        """Subscribe to the given stream with the callback"""
+        return self.ws.subscribe(stream, callback, transform)
+
+    def unsubscribe(self, stream, transform=""):
+        """Unsubscribe from the given stream"""
+        return self.ws.unsubscribe(stream, transform)
+
+    def wsdisconnect(self):
+        """Disconnects the websocket"""
+        self.ws.disconnect()

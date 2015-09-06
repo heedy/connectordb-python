@@ -13,7 +13,7 @@ class Stream(ConnectorObject):
     def create(self, schema):
         """Creates a stream given a JSON schema encoded as a python dict"""
         Draft4Validator.check_schema(schema)
-        self.metadata = self.db.create(self.path, schema)
+        self.metadata = self.db.create(self.path, schema).json()
 
     def insert_array(self, datapoint_array, restamp=False):
         """given an array of datapoints, inserts them to the stream. This is different from insert(),
@@ -45,6 +45,54 @@ class Stream(ConnectorObject):
 
         """
         self.insert_array([{"d": data}], restamp=True)
+
+    def subscribe(self, callback, transform="", downlink=False):
+        """Subscribes to the stream, running the callback function each time datapoints are inserted into
+        the given stream. There is an optional transform to the datapoints, and a downlink parameter.::
+
+            s = cdb["mystream"]
+
+            def subscription_callback(stream,data):
+                print stream, data
+
+            s.subscribe(subscription_callback)
+
+        The downlink parameter is for downlink streams - it allows to subscribe to the downlink substream,
+        before it is acknowledged. This is especially useful for something like lights - have lights be
+        a boolean downlink stream, and the light itself be subscribed to the downlink, so that other
+        devices can write to the light, turning it on and off::
+
+            def light_control(stream,data):
+                light_boolean = data[0]["d"]
+                print "Setting light to", light_boolean
+                set_light(light_boolean)
+
+                #Acknowledge the write
+                return True
+
+            # We don't care about intermediate values, we only want the most recent setting
+            # of the light, meaning we want the "if last" transform
+            s.subscribe(light_control, downlink=True, transform="if last")
+
+        """
+        streampath = self.path
+        if downlink:
+            streampath += "/downlink"
+
+        return self.db.subscribe(streampath, callback, transform)
+
+    def unsubscribe(self, transform="", downlink=False):
+        """Unsubscribes from a previously subscribed stream. Note that the same values of transform
+        and downlink must be passed in order to do the correct unsubscribe::
+
+            s.subscribe(callback,transform="if last")
+            s.unsubscribe(transform="if last")
+        """
+        streampath = self.path
+        if downlink:
+            streampath += "/downlink"
+
+        return self.db.unsubscribe(streampath, transform)
 
     def __call__(self, t1=None, t2=None, limit=None, i1=None, i2=None, transform=None):
         """By calling the stream as a function, you can query it by either time range or index,
