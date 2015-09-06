@@ -272,7 +272,7 @@ class TestConnectorDB(unittest.TestCase):
         time.sleep(0.1)
 
         s.insert(100)
-        time.sleep(0.1)
+        time.sleep(0.2)
 
         self.assertTrue(subs.msg[0]["d"] == 100)
         self.assertTrue(subs2.msg is None)
