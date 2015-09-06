@@ -21,31 +21,35 @@ The simplest, and most common task is logging data. Suppose we have a little wea
 ```python
 
 def getTemperature():
-	#Your code here
+    #Your code here
+    pass
 
-from connectordb.logger import ConnectorLogger
+from connectordb.logger import Logger
 
-#Open the logger using a cache file name (where datapoints are cached before syncing)
-l = ConnectorLogger("cache.db")
+def initlogger(l):
+    # This function is called when first creating the Logger, to initialize the values
 
-#Set the device you are using
-l.setLogin("myname/weatherstation","apikeysagr43ETE343were")
+    # api key is needed to get access to ConnectorDB
+    l.apikey = raw_input("apikey:")
 
-#If given a schema (as we have done here), addStream will create the stream if it doesn't exist
-l.addStream("temperature",{"type":"number"})
+    # If given a schema (as we have done here), addStream will create the stream if it doesn't exist
+    l.addStream("temperature",{"type":"number"})
 
-#Sync with ConnectorDB once an hour (in seconds)
-l.syncperiod = 60*60
+    # Sync with ConnectorDB once an hour (in seconds)
+    l.syncperiod = 60*60
 
-#Start running syncer in background
+# Open the logger using a cache file name (where datapoints are cached before syncing)
+l = Logger("cache.db", on_create=initlogger)
+
+# Start running syncer in background
 l.start()
 
-#While the syncer is running in the background, we are free to add data
-#to the cache however we want - it will be saved first to the cache file
-#so that you don't lose any data, and will be synced to the database once an hour
+# While the syncer is running in the background, we are free to add data
+# to the cache however we want - it will be saved first to the cache file
+# so that you don't lose any data, and will be synced to the database once an hour
 while True:
-	time.sleep(60)
-	l.insert("temperature",getTemperature())
+    time.sleep(60)
+    l.insert("temperature",getTemperature())
 ```
 
 ConnectorDB Basics
@@ -56,12 +60,12 @@ The logger is a convenient wrapper for gathering data. When wanting to operate o
 ```python
 from connectordb import ConnectorDB
 
-db = ConnectorDB("myname/mydevice","apikeysadfdsf98439g")
+db = ConnectorDB("apikeysadfdsf98439g")
 
 mystream = db["mystream"]
 
 if not mystream.exists():
-	mystream.create({"type": "string"})
+    mystream.create({"type": "string"})
 
 mystream.insert("Hello World!")
 
@@ -72,15 +76,6 @@ print "mystream has",len(mystream),"datapoint"
 print mystream[0]["d"]
 ```
 
-if you need super fast inserts, you can enable websocket inserts:
-
-```python
-db.wsinsert = True
-```
-
-which will make `db.insert` use websocket.
-Beware, though: inserting thru websocket does not return errors!
-
 Subscriptions
 -------------------
 
@@ -89,15 +84,15 @@ You can subscribe to streams, so that you get data the moment it is written to t
 ```python
 from connectordb import ConnectorDB
 
-db = ConnectorDB("myname/mydevice","apikeysadfdsf98439g")
+db = ConnectorDB("apikeysadfdsf98439g")
 
 mystream = db["mystream"]
 
 if not mystream.exists():
-	mystream.create({"type": "string"})
+    mystream.create({"type": "string"})
 
 def callbackFunction(streampath,data):
-	print streampath,data
+    print streampath,data
 
 mystream.subscribe(callbackFunction)
 
@@ -112,33 +107,32 @@ If you are implementing a downlink stream (a stream that accepts input from othe
 from connectordb import ConnectorDB
 import time
 
-db = ConnectorDB("myname/mydevice","apikeysadfdsf98439g")
+db = ConnectorDB("apikeysadfdsf98439g")
 
 mystream = db["mylight"]
 
 if not mystream.exists():
-	mystream.create({"type": "boolean"})
-	mystream.downlink = True
+    mystream.create({"type": "boolean"})
+    mystream.downlink = True
 
 def callbackFunction(streampath,data):
-	ison = data[-1]["d"]
-	if ison:
-		turn_on_light()
-	else:
-		turn_off_light()
-	#This acknowledges the datapoint by writing the action that was taken to the real stream
-	#As a shortcut, you can also use return True to acknowledge the unmodified data
-	#meaning that return True would return the original data as given by the data variable.
-	#Not returning anything or returning False does not acknowledge the downlink.
-	#WARNING: Make sure only ONE callback acknowledges the downlink to avoid double-inserts
-	#DANGER: Make sure you only acknowledge downlinks to streams that belong to the currently
-	#authenticated device, since inserting as a different device will redirect to
-	#the downlink stream, creating an infinite insert loop.
-	return [{"t": time.time(),"d": ison}]
+    ison = data[-1]["d"]
+    if ison:
+        turn_on_light()
+    else:
+        turn_off_light()
+    # This acknowledges the datapoint by writing the action that was taken to the real stream
+    # As a shortcut, you can also use return True to acknowledge the unmodified data
+    # meaning that return True would return the original data as given by the data variable.
+    # Not returning anything or returning False does not acknowledge the downlink.
+    # WARNING: Make sure only ONE callback acknowledges the downlink to avoid double-inserts
+    # DANGER: Make sure you only acknowledge downlinks to streams that belong to the currently
+    # authenticated device, since inserting as a different device will redirect to
+    # the downlink stream, creating an infinite insert loop.
+    return [{"t": time.time(),"d": ison}]
 
 mystream.subscribe(callbackFunction,downlink=True)
 
-#Sleep forever waiting for inputs. You can also just do an infinite loop with sleep.
-#in fact, that's what sleepforever does
-db.sleepforever()
+while True:
+    time.sleep(100)
 ```
