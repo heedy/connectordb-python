@@ -269,10 +269,10 @@ class TestConnectorDB(unittest.TestCase):
         s.subscribe(subs.subscribe_callback)
         s.subscribe(subs2.subscribe_callback, transform="if $ > 200")
 
-        time.sleep(0.1)
+        time.sleep(0.2)
 
         s.insert(100)
-        time.sleep(0.1)
+        time.sleep(0.2)
 
         self.assertTrue(subs.msg[0]["d"] == 100)
         self.assertTrue(subs2.msg is None)
@@ -320,9 +320,9 @@ class TestConnectorDB(unittest.TestCase):
         mds.subscribe(subs.subscribe_callback, downlink=True)
         s.subscribe(subs2.subscribe_callback)
 
-        time.sleep(0.1)
+        time.sleep(0.2)
         s.insert("hello!")
-        time.sleep(0.1)
+        time.sleep(0.2)
 
         self.assertTrue(subs.msg[0]["d"] == "hello!")
         self.assertTrue(subs2.msg[0]["d"] == "hello!")
