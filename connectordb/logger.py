@@ -75,8 +75,15 @@ class Logger(object):
     def connectordb(self):
         """Returns the ConnectorDB object that the logger uses. Raises an error if Logger isn't able to connect"""
         if self.__cdb is None:
-            self.__cdb = ConnectorDB(self.apikey, self.serverurl)
+            logging.debug("Logger: Connecting to " + self.serverurl)
+            self.__cdb = ConnectorDB(self.apikey, url=self.serverurl)
         return self.__cdb
+
+    def close(self):
+        """Closes the database connections and stops all synchronization."""
+        self.stop()
+        with self.synclock:
+            self.database.close()
 
     def addStream(self, streamname, schema=None):
         """Adds the given stream to the logger. Requires an active connection to the ConnectorDB database.
@@ -93,7 +100,7 @@ class Logger(object):
                 raise Exception(
                     "The stream '%s' was not found" % (streamname, ))
 
-        self.addStream_force(self, streamname, stream.schema)
+        self.addStream_force(streamname, stream.schema)
 
     def addStream_force(self, streamname, schema=None):
         """This function adds the given stream to the logger, but does not check with a ConnectorDB database
@@ -140,7 +147,7 @@ class Logger(object):
                             "Stream %s does not exist!" % (stream, ))
 
                     c.execute(
-                        "SELECT * FROM cache WHERE streamname=? ORDER BY timestamp ASC;",
+                        "SELECT * FROM cache WHERE stream=? ORDER BY timestamp ASC;",
                         (stream, ))
                     datapointArray = []
                     for dp in c.fetchall():
@@ -155,7 +162,7 @@ class Logger(object):
 
                         # If there was no error inserting, delete the datapoints from the cache
                         c.execute(
-                            "DELETE FROM cache WHERE streamname=? AND timestamp <=?",
+                            "DELETE FROM cache WHERE stream=? AND timestamp <=?",
                             (stream, datapointArray[-1]["t"]))
                 self.lastsynctime = time.time()
         except:
@@ -173,6 +180,7 @@ class Logger(object):
                 self.syncthread.cancel()
             self.syncthread = threading.Timer(self.syncperiod,
                                               self.__runsyncer)
+            self.syncthread.daemon = True
             self.syncthread.start()
 
     def __runsyncer(self):
@@ -180,7 +188,7 @@ class Logger(object):
             self.sync()
         except Exception and e:
             logging.warn("ConnectorDB sync failed: " + str(e))
-        self.__setsyncer()
+        self.__setsync()
 
     def start(self):
         """Start the logger background synchronization service. This allows you to not need to
@@ -196,7 +204,7 @@ class Logger(object):
                     "Logger: Start called on a syncer that is already running")
                 return
 
-            self.__setsync()
+        self.__setsync()
 
     def stop(self):
         """Stops the background synchronization thread"""
@@ -229,7 +237,7 @@ class Logger(object):
             self.__syncperiod = value
             resync = self.syncthread is not None
         c = self.database.cursor()
-        c.execute("UPDATE metadatta SET syncperiod=?", (value, ))
+        c.execute("UPDATE metadata SET syncperiod=?", (value, ))
 
         if resync:
             self.__setsync()  # If we change the sync period during runtime, immediately update
@@ -297,3 +305,8 @@ class Logger(object):
     def data(self, value):
         c = self.database.cursor()
         c.execute("UPDATE metadata SET userdatajson=?;", (json.dumps(value), ))
+
+    @property
+    def name(self):
+        """Gets the name of the currently logged in device"""
+        return self.connectordb.ping()
