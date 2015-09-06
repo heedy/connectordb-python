@@ -132,7 +132,7 @@ class WebsocketHandler(object):
             return True  # Already connected
         if self.status == "disconnecting":
             return False
-        if self.status == "disconnected":
+        if self.status == "disconnected" or self.status == "reconnecting":
             self.ws = websocket.WebSocketApp(self.ws_url,
                                              header=self.headers,
                                              on_message=self.__on_message,
@@ -181,10 +181,20 @@ class WebsocketHandler(object):
             self.reconnect_time = self.reconnect_time_starting_seconds
 
         self.status = "reconnecting"
+        logging.warn("ConnectorDB:WS: Attempting to reconnect in %fs",
+                     self.reconnect_time)
+
+        self.reconnector = threading.Timer(self.reconnect_time,
+                                           self.__reconnect_fnc)
+        self.reconnector.daemon = True
+        self.reconnector.start()
+
+    def __reconnect_fnc(self):
+        """This function is called by reconnect after the time delay"""
         if self.connect():
             self.__resubscribe()
         else:
-            pass
+            self.__reconnect()
 
     def __resubscribe(self):
         """Send subscribe command for all existing subscriptions. This allows to resume a connection
@@ -203,7 +213,7 @@ class WebsocketHandler(object):
         """Called when the websocket is opened"""
         logging.debug("ConnectorDB: Websocket opened")
 
-        #Connection success - decrease the wait time for next connection
+        # Connection success - decrease the wait time for next connection
         self.reconnect_time /= self.reconnect_time_backoff_multiplier
 
         self.status = "connected"
@@ -230,7 +240,7 @@ class WebsocketHandler(object):
             self.status = "closed"
             self.__reconnect()
 
-    def __on_error(self, ws):
+    def __on_error(self, ws, err):
         """Called when there is an error in the websocket"""
         logging.debug("ConnectorDB:WS: Connection Error")
 
