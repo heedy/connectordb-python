@@ -3,7 +3,7 @@ Queries
 ===================
 
 ConnectorDB includes special queries optimized for generating datasets from the time series data associated
-with streams. There are 3 main query types"
+with streams. There are 2 main query types:
 
 merge
 	Puts together multiple streams into one combined stream
