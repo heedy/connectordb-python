@@ -96,7 +96,7 @@ class DatabaseConnection(object):
         """Run the given query on the connection (POST request to /query)"""
         return self.handleresult(self.r.post(urljoin(self.url + "query/",
                                                      query_type),
-                                             data=json.dumps(query)))
+                                             data=json.dumps(query))).json()
 
     def create(self, path, data=None):
         """Send a POST CRUD API request to the given path using the given data which will be converted

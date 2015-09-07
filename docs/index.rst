@@ -6,6 +6,7 @@ ConnectorDB Python Client
 
    connectordb
    logger
+   query
 
 .. automodule:: connectordb
    :members:

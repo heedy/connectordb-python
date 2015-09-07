@@ -9,6 +9,38 @@ from jsonschema import Draft4Validator
 import json
 
 
+def query_maker(t1=None, t2=None, limit=None, i1=None, i2=None, transform=None):
+    """query_maker takes the optional arguments and constructs a json query for a stream's
+    datapoints using it::
+        #{"t1": 5, "transform": "if $ > 5"}
+        print query_maker(t1=5,transform="if $ > 5")
+    """
+    params = {}
+    if t1 is not None:
+        params["t1"] = t1
+    if t2 is not None:
+        params["t2"] = t2
+    if limit is not None:
+        params["limit"] = limit
+    if i1 is not None or i2 is not None:
+        if len(params) > 0:
+            raise AssertionError(
+                "Stream cannot be accessed both by index and by timestamp at the same time.")
+        if i1 is not None:
+            params["i1"] = i1
+        if i2 is not None:
+            params["i2"] = i2
+
+    # In order to avoid accidental requests for full streams, ConnectorDB does not permit requests
+    # without any url parameters, so we set i1=0 if we are requesting the full stream
+    if len(params) == 0:
+        params["i1"] = 0
+
+    if transform is not None:
+        params["transform"] = transform
+    return params
+
+
 class Stream(ConnectorObject):
     def create(self, schema):
         """Creates a stream given a JSON schema encoded as a python dict"""
@@ -106,30 +138,7 @@ class Stream(ConnectorObject):
             stream(transform="sum | if last")
 
         """
-        params = {}
-        if t1 is not None:
-            params["t1"] = str(t1)
-        if t2 is not None:
-            params["t2"] = str(t2)
-        if limit is not None:
-            params["limit"] = str(limit)
-        if i1 is not None or i2 is not None:
-            if len(params) > 0:
-                raise AssertionError(
-                    "Stream cannot be accessed both by index and by timestamp at the same time.")
-            if i1 is not None:
-                params["i1"] = str(i1)
-            if i2 is not None:
-                params["i2"] = str(i2)
-
-        # In order to avoid accidental requests for full streams, ConnectorDB does not permit requests
-        # without any url parameters, so we set i1=0 if we are requesting the full stream
-        if len(params) == 0:
-            params["i1"] = "0"
-
-        if transform is not None:
-            params["transform"] = transform
-
+        params = query_maker(t1, t2, limit, i1, i2, transform)
         return self.db.read(self.path + "/data", params).json()
 
     def __getitem__(self, getrange):
