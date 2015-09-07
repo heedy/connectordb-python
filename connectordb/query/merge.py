@@ -37,5 +37,4 @@ class Merge(object):
 
     def run(self):
         """Runs the merge query, and returns the result"""
-        print self.query
         return self.cdb.db.query("merge", self.query)
