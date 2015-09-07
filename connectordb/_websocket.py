@@ -96,7 +96,7 @@ class WebsocketHandler(object):
 
     def subscribe(self, stream, callback, transform=""):
         """Given a stream, a callback and an optional transform, sets up the subscription"""
-        if self.status == "disconnected":
+        if self.status == "disconnected" or self.status == "disconnecting":
             self.connect()
         if self.status is not "connected":
             return False
@@ -131,7 +131,9 @@ class WebsocketHandler(object):
         if self.status == "connected":
             return True  # Already connected
         if self.status == "disconnecting":
-            return False
+            # If currently disconnecting, wait a moment, and retry connect
+            time.sleep(0.1)
+            self.connect()
         if self.status == "disconnected" or self.status == "reconnecting":
             self.ws = websocket.WebSocketApp(self.ws_url,
                                              header=self.headers,
@@ -163,6 +165,7 @@ class WebsocketHandler(object):
 
     def __reconnect(self):
         """This is called when a connection is lost - it attempts to reconnect to the server"""
+        self.status = "reconnecting"
 
         # Reset the disconnect time after 15 minutes
         if self.disconnected_time - self.connected_time > 15 * 60:
@@ -180,7 +183,6 @@ class WebsocketHandler(object):
         if self.reconnect_time < self.reconnect_time_starting_seconds:
             self.reconnect_time = self.reconnect_time_starting_seconds
 
-        self.status = "reconnecting"
         logging.warn("ConnectorDB:WS: Attempting to reconnect in %fs",
                      self.reconnect_time)
 
@@ -237,7 +239,6 @@ class WebsocketHandler(object):
         if self.status == "disconnecting":
             self.status = "disconnected"
         elif self.status == "connected":
-            self.status = "closed"
             self.__reconnect()
 
     def __on_error(self, ws, err):
