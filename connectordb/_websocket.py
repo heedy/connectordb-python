@@ -165,11 +165,8 @@ class WebsocketHandler(object):
             with self.subscription_lock:
                 self.subscriptions = {}
 
-            self.ws_openlock.acquire()
             self.ws.close()
-
-            self.ws_openlock.acquire()
-            self.ws_openlock.release()
+            self.__on_close(self.ws)
 
     def __reconnect(self):
         """This is called when a connection is lost - it attempts to reconnect to the server"""
@@ -238,6 +235,8 @@ class WebsocketHandler(object):
 
     def __on_close(self, ws):
         """Called when the websocket is closed"""
+        if self.status == "disconnected":
+            return  # This can be double-called on disconnect
         logging.debug("ConnectorDB:WS: Websocket closed")
 
         # Turn off the ping timer
@@ -246,7 +245,6 @@ class WebsocketHandler(object):
         self.disconnected_time = time.time()
         if self.status == "disconnecting":
             self.status = "disconnected"
-            self.ws_openlock.release()
         elif self.status == "connected":
             self.__reconnect()
 
@@ -308,6 +306,7 @@ class WebsocketHandler(object):
             logging.warn("ConnectorDB:WS: Websocket ping timed out!")
             if self.ws is not None:
                 self.ws.close()
+                self.__on_close(self.ws)
         else:
             # reset the ping timer
             self.pingtimer = threading.Timer(self.connection_ping_timeout,

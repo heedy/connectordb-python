@@ -303,9 +303,6 @@ class TestConnectorDB(unittest.TestCase):
         mydevice = self.usrdb.user["mydevice"]
 
         mydevice.create()
-        print mydevice
-        print mydevice.data
-        print mydevice.apikey
         s = mydevice["mystream"]
         mdconn = connectordb.ConnectorDB(mydevice.apikey, url=TEST_URL)
 
