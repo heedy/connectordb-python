@@ -96,7 +96,7 @@ class WebsocketHandler(object):
 
     def subscribe(self, stream, callback, transform=""):
         """Given a stream, a callback and an optional transform, sets up the subscription"""
-        if self.status == "disconnected" or self.status == "disconnecting":
+        if self.status == "disconnected" or self.status == "disconnecting" or self.status == "connecting":
             self.connect()
         if self.status is not "connected":
             return False
@@ -128,12 +128,17 @@ class WebsocketHandler(object):
     def connect(self):
         """Attempt to connect to the websocket - and returns either True or False depending on if
         the connection was successful or not"""
+
+        # Wait for the lock to be available (ie, the websocket is not being used (yet))
+        self.ws_openlock.acquire()
+        self.ws_openlock.release()
+
         if self.status == "connected":
             return True  # Already connected
         if self.status == "disconnecting":
             # If currently disconnecting, wait a moment, and retry connect
             time.sleep(0.1)
-            self.connect()
+            return self.connect()
         if self.status == "disconnected" or self.status == "reconnecting":
             self.ws = websocket.WebSocketApp(self.ws_url,
                                              header=self.headers,
@@ -157,11 +162,14 @@ class WebsocketHandler(object):
     def disconnect(self):
         if self.status == "connected":
             self.status = "disconnecting"
-            self.ws.close()
             with self.subscription_lock:
                 self.subscriptions = {}
-        else:
-            self.status = "disconnected"
+
+            self.ws_openlock.acquire()
+            self.ws.close()
+
+            self.ws_openlock.acquire()
+            self.ws_openlock.release()
 
     def __reconnect(self):
         """This is called when a connection is lost - it attempts to reconnect to the server"""
@@ -238,6 +246,7 @@ class WebsocketHandler(object):
         self.disconnected_time = time.time()
         if self.status == "disconnecting":
             self.status = "disconnected"
+            self.ws_openlock.release()
         elif self.status == "connected":
             self.__reconnect()
 
