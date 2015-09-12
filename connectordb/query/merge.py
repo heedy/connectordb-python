@@ -1,6 +1,17 @@
 from .._stream import Stream, query_maker
 
 
+def get_stream(cdb, stream):
+    if isinstance(stream, Stream):
+        return stream.path
+    elif stream.count("/") == 0:
+        return cdb.path + "/" + stream
+    elif stream.count("/") == 2:
+        return stream
+    else:
+        raise Exception("Stream '%s' invalid" % (stream, ))
+
+
 class Merge(object):
     """Merge represents a query which allows to merge multiple streams into one
     when reading, with all the streams merged together by increasing timestamp.
@@ -23,14 +34,7 @@ class Merge(object):
         names and Stream objects."""
         params = query_maker(t1, t2, limit, i1, i2, transform)
 
-        if isinstance(stream, Stream):
-            params["stream"] = stream.path
-        elif stream.count("/") == 0:
-            params["stream"] = self.cdb.path + "/" + stream
-        elif stream.count("/") == 2:
-            params["stream"] = stream
-        else:
-            raise Exception("Stream '%s' invalid" % (stream, ))
+        params["stream"] = get_stream(self.cdb, stream)
 
         # Now add the stream to the query parameters
         self.query.append(params)

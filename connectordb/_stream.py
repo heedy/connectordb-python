@@ -31,11 +31,6 @@ def query_maker(t1=None, t2=None, limit=None, i1=None, i2=None, transform=None):
         if i2 is not None:
             params["i2"] = i2
 
-    # In order to avoid accidental requests for full streams, ConnectorDB does not permit requests
-    # without any url parameters, so we set i1=0 if we are requesting the full stream
-    if len(params) == 0:
-        params["i1"] = 0
-
     if transform is not None:
         params["transform"] = transform
     return params
@@ -139,6 +134,12 @@ class Stream(ConnectorObject):
 
         """
         params = query_maker(t1, t2, limit, i1, i2, transform)
+
+        # In order to avoid accidental requests for full streams, ConnectorDB does not permit requests
+        # without any url parameters, so we set i1=0 if we are requesting the full stream
+        if len(params) == 0:
+            params["i1"] = 0
+
         return self.db.read(self.path + "/data", params).json()
 
     def __getitem__(self, getrange):

@@ -20,3 +20,11 @@ Merge
     :members:
     :undoc-members:
     :show-inheritance:
+
+Dataset
+++++++++++++++++
+
+.. automodule:: connectordb.query.dataset
+    :members:
+    :undoc-members:
+    :show-inheritance:
