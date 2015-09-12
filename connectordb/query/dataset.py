@@ -43,90 +43,86 @@ class Dataset(object):
 
     There are two types of dataset queries
 
-    T-Dataset
-    ----------
+    :T-Dataset:
 
-    A dataset query which is generated based upon a time range. That is, you choose a time range and a
-    time difference between elements of the dataset, and that is used to generate your dataset.
+        T-Dataset: A dataset query which is generated based upon a time range. That is, you choose a time range and a
+        time difference between elements of the dataset, and that is used to generate your dataset.
 
-        +--------------+----------------------+
-        | Timestamp    | Room Temperature (F) |
-        +==============+======================+
-        | 1pm          | 73                   |
-        +--------------+----------------------+
-        | 4pm          | 84                   |
-        +--------------+----------------------+
-        | 8pm          | 79                   |
-        +--------------+----------------------+
+            +--------------+----------------------+
+            | Timestamp    | Room Temperature (F) |
+            +==============+======================+
+            | 1pm          | 73                   |
+            +--------------+----------------------+
+            | 4pm          | 84                   |
+            +--------------+----------------------+
+            | 8pm          | 79                   |
+            +--------------+----------------------+
 
-    If I were to generate a T-dataset from 12pm to 8pm with dt=2 hours, using the interpolator "closest",
-    I would get the following result:
+        If I were to generate a T-dataset from 12pm to 8pm with dt=2 hours, using the interpolator "closest",
+        I would get the following result:
 
-        +--------------+----------------------+
-        | Timestamp    | Room Temperature (F) |
-        +==============+======================+
-        | 12pm         | 73                   |
-        +--------------+----------------------+
-        | 2pm          | 73                   |
-        +--------------+----------------------+
-        | 4pm          | 84                   |
-        +--------------+----------------------+
-        | 6pm          | 84                   |
-        +--------------+----------------------+
-        | 8pm          | 79                   |
-        +--------------+----------------------+
+            +--------------+----------------------+
+            | Timestamp    | Room Temperature (F) |
+            +==============+======================+
+            | 12pm         | 73                   |
+            +--------------+----------------------+
+            | 2pm          | 73                   |
+            +--------------+----------------------+
+            | 4pm          | 84                   |
+            +--------------+----------------------+
+            | 6pm          | 84                   |
+            +--------------+----------------------+
+            | 8pm          | 79                   |
+            +--------------+----------------------+
 
-    The "closest" interpolator happens to return the datapoint closest to the given timestamp. There are many
-    interpolators to choose from (described later).
+        The "closest" interpolator happens to return the datapoint closest to the given timestamp. There are many
+        interpolators to choose from (described later).
 
-    Hint: T-Datasets can be useful for plotting data (such as daily or weekly averages).
+        Hint: T-Datasets can be useful for plotting data (such as daily or weekly averages).
 
-    Y-Dataset
-    -------------
+    :Y-Dataset:
+        Y-datasets allow to generate datasets based not on evenly spaced timestamps, but based upon a stream's values
 
-    Y-datasets allow to generate datasets based not on evenly spaced timestamps, but based upon a stream's values
+        Suppose you have the following data:
 
-    Suppose you have the following data:
+            +-----------+--------------+---+-----------+----------------------+
+            | Timestamp | Mood Rating  |   | Timestamp | Room Temperature (F) |
+            +===========+==============+===+===========+======================+
+            | 1pm       | 7            |   | 2pm       | 73                   |
+            +-----------+--------------+---+-----------+----------------------+
+            | 4pm       | 3            |   | 5pm       | 84                   |
+            +-----------+--------------+---+-----------+----------------------+
+            | 11pm      | 5            |   | 8pm       | 81                   |
+            +-----------+--------------+---+-----------+----------------------+
+            |           |              |   | 11pm      | 79                   |
+            +-----------+--------------+---+-----------+----------------------+
 
-        +-----------+--------------+---+-----------+----------------------+
-        | Timestamp | Mood Rating  |   | Timestamp | Room Temperature (F) |
-        +===========+==============+===+===========+======================+
-        | 1pm       | 7            |   | 2pm       | 73                   |
-        +-----------+--------------+---+-----------+----------------------+
-        | 4pm       | 3            |   | 5pm       | 84                   |
-        +-----------+--------------+---+-----------+----------------------+
-        | 11pm      | 5            |   | 8pm       | 81                   |
-        +-----------+--------------+---+-----------+----------------------+
-        |           |              |   | 11pm      | 79                   |
-        +-----------+--------------+---+-----------+----------------------+
+        A Y-dataset with Y=Mood Rating, and the interpolator "closest" on Room Temperature would generate:
 
-    A Y-dataset with Y=Mood Rating, and the interpolator "closest" on Room Temperature would generate:
+            +--------------+----------------------+
+            | Mood Rating  | Room Temperature (F) |
+            +==============+======================+
+            | 7            | 73                   |
+            +--------------+----------------------+
+            | 3            | 84                   |
+            +--------------+----------------------+
+            | 5            | 79                   |
+            +--------------+----------------------+
 
-        +--------------+----------------------+
-        | Mood Rating  | Room Temperature (F) |
-        +==============+======================+
-        | 7            | 73                   |
-        +--------------+----------------------+
-        | 3            | 84                   |
-        +--------------+----------------------+
-        | 5            | 79                   |
-        +--------------+----------------------+
+    :Interpolators:
 
-    Interpolators
-    ---------------
+        Interpolators are special functions which specify how exactly the data is supposed to be combined
+        into a dataset. There are several interpolators, such as "before", "after", "closest" which work
+        on any type of datapoint, and there are more advanced interpolators which require a certain datatype
+        such as the "sum" or "average" interpolator (which require numerical type).
 
-    Interpolators are special functions which specify how exactly the data is supposed to be combined
-    into a dataset. There are several interpolators, such as "before", "after", "closest" which work
-    on any type of datapoint, and there are more advanced interpolators which require a certain datatype
-    such as the "sum" or "average" interpolator (which require numerical type).
+        In order to get detailed documentation on the exact interpolators that the version of ConnectorDB you are
+        are connected to supports, you can do the following::
 
-    In order to get detailed documentation on the exact interpolators that the version of ConnectorDB you are
-    are connected to supports, you can do the following::
-
-        cdb = connectordb.ConnectorDB(apikey)
-        info = cdb.info()
-        # Prints out all the supported interpolators and their associated documentation
-        print info["interpolators"]
+            cdb = connectordb.ConnectorDB(apikey)
+            info = cdb.info()
+            # Prints out all the supported interpolators and their associated documentation
+            print info["interpolators"]
 
     """
 
