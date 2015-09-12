@@ -54,6 +54,12 @@ class Stream(ConnectorObject):
 
         The optional `restamp` parameter specifies whether or not the database should rewrite the timestamps
         of datapoints which have a timestamp that is less than one that already exists in the database.
+
+        That is, if restamp is False, and a datapoint has a timestamp less than a datapoint that already
+        exists in the database, then the insert will fail. If restamp is True, then all datapoints
+        with timestamps below the datapoints already in the database will have their timestamps overwritten
+        to the same timestamp as the most recent datapoint hat already exists in the database, and the insert will
+        succeed.
         """
         if restamp:
             self.db.update(self.path + "/data", datapoint_array)

@@ -69,3 +69,82 @@ class TestQuery(unittest.TestCase):
                                        "d": 2}, {"t": 5,
                                                  "d": 1}, {"t": 5.1,
                                                            "d": 2}])
+
+    def test_tdataset(self):
+        s1 = self.udb["temperature"]
+
+        s1.create({"type": "number"})
+
+        s1.insert_array([{"t": 2,
+                          "d": 73}, {"t": 5,
+                                     "d": 84}, {"t": 8,
+                                                "d": 81}, {"t": 11,
+                                                           "d": 79}])
+
+        ds = Dataset(self.udb, t1=0, t2=8, dt=2)
+
+        ds.addStream("temperature", "closest")
+
+        res = ds.run()
+
+        self.assertEqual(5, len(res))
+        self.assertListEqual(
+            res, [{
+                "d": {"temperature": {"t": 2,
+                                      "d": 73}}
+            }, {"t": 2,
+                "d": {"temperature": {"t": 2,
+                                      "d": 73}
+                      }}, {"t": 4,
+                           "d": {"temperature": {"t": 5,
+                                                 "d": 84}}},
+                  {"t": 6,
+                   "d": {"temperature": {"t": 5,
+                                         "d": 84}
+                         }}, {"t": 8,
+                              "d": {"temperature": {"t": 8,
+                                                    "d": 81}}}])
+
+    def test_ydataset(self):
+        s1 = self.udb["temperature"]
+        s2 = self.udb["mood_rating"]
+
+        s1.create({"type": "number"})
+        s2.create({"type": "number"})
+
+        s1.insert_array([{"t": 2,
+                          "d": 73}, {"t": 5,
+                                     "d": 84}, {"t": 8,
+                                                "d": 81}, {"t": 11,
+                                                           "d": 79}])
+        s2.insert_array([{"t": 1,
+                          "d": 7}, {"t": 4,
+                                    "d": 3}, {"t": 11,
+                                              "d": 5}])
+
+        ds = Dataset(self.udb, s2)
+        ds.addStream("temperature", "closest")
+        res = ds.run()
+
+        self.assertListEqual(res, [
+            {
+                "t": 1,
+                "d": {"temperature": {"t": 2,
+                                      "d": 73},
+                      "y": {"t": 1,
+                            "d": 7}}
+            }, {
+                "t": 4,
+                "d": {"temperature": {"t": 5,
+                                      "d": 84},
+                      "y": {"t": 4,
+                            "d": 3}}
+            }, {
+                "t": 11,
+                "d":
+                {"temperature": {"t": 11,
+                                 "d": 79},
+                 "y": {"t": 11,
+                       "d": 5}}
+            }
+        ])

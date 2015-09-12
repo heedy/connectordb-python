@@ -12,7 +12,7 @@ def param_stream(cdb, params, stream):
 
 class Dataset(object):
     """ConnectorDB is capable of taking several separate unrelated streams, and based upon
-    the chosen interpolation method, putting them all together to generate tabular centered about
+    the chosen interpolation method, putting them all together to generate tabular data centered about
     either another stream's datapoints, or based upon time intervals.
 
     The underlying issue that Datasets solve is that in ConnectorDB, streams are inherently unrelated.
