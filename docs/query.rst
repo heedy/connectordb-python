@@ -6,11 +6,11 @@ ConnectorDB includes special queries optimized for generating datasets from the 
 with streams. There are 2 main query types:
 
 merge
-	Puts together multiple streams into one combined stream
+    Puts together multiple streams into one combined stream
 
 dataset
-	Takes multiple streams and uses their time series to generate
-	tabular data ready for use in plotting and ML applications.
+    Takes multiple streams and uses their time series to generate
+    tabular data ready for use in plotting and ML applications.
 
 
 Merge
@@ -29,3 +29,4 @@ Dataset
     :undoc-members:
     :show-inheritance:
     :special-members:
+    :exclude-members: __dict__,__weakref__
