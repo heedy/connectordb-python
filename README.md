@@ -7,7 +7,7 @@ This is a mini-crash-course in the ConnectorDB python interface
 
 To install:
 ```python
-sudo python setup.py install
+pip install connectordb
 ```
 
 If on ubuntu, you might want to install `python-apsw` before running the above command.
