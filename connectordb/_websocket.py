@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import websocket
 import threading
 import logging
@@ -287,7 +289,7 @@ class WebsocketHandler(object):
             self.subscription_lock.release()
             logging.warn(
                 "ConnectorDB:WS: Msg '%s' not subscribed! Subscriptions: %s",
-                msg["stream"], self.subscriptions.keys())
+                msg["stream"], list(self.subscriptions.keys()))
 
     def __on_ping(self, ws, data):
         """The server periodically sends us websocket ping messages to keep the connection alive. To

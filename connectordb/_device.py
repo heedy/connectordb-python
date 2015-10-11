@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
+from __future__ import absolute_import
 
-from _connectorobject import ConnectorObject
-
-import _user
-import _stream
+from ._connectorobject import ConnectorObject
 
 
 class Device(ConnectorObject):
@@ -26,7 +23,7 @@ class Device(ConnectorObject):
 
     def __getitem__(self, stream_name):
         """Gets the child stream by name"""
-        return _stream.Stream(self.db, self.path + "/" + stream_name)
+        return Stream(self.db, self.path + "/" + stream_name)
 
     def __repr__(self):
         """Returns a string representation of the device"""
@@ -50,4 +47,9 @@ class Device(ConnectorObject):
     @property
     def user(self):
         """user returns the user which owns the given device"""
-        return _user.User(self.db, self.path.split("/")[0])
+        return User(self.db, self.path.split("/")[0])
+
+
+# The import has to go on the bottom because py3 imports are annoying about circular dependencies
+from ._user import User
+from ._stream import Stream

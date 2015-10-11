@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import unittest
 
 import connectordb
@@ -148,3 +150,6 @@ class TestQuery(unittest.TestCase):
                        "d": 5}}
             }
         ])
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
+from __future__ import absolute_import
 
-from _connectorobject import ConnectorObject
-
-import _device
+from ._connectorobject import ConnectorObject
 
 
 class User(ConnectorObject):
@@ -31,7 +29,7 @@ class User(ConnectorObject):
 
     def __getitem__(self, device_name):
         """Gets the child device by name"""
-        return _device.Device(self.db, self.path + "/" + device_name)
+        return Device(self.db, self.path + "/" + device_name)
 
     def __repr__(self):
         """Returns a string representation of the user"""
@@ -51,3 +49,6 @@ class User(ConnectorObject):
     def email(self, new_email):
         """sets the user's email address"""
         self.set({"email": new_email})
+
+# The import has to go on the bottom because py3 imports are annoying
+from ._device import Device

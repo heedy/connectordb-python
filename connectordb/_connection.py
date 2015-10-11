@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+from __future__ import absolute_import
 
 from urlparse import urljoin
 from requests import Session
@@ -6,7 +6,7 @@ from requests.auth import HTTPBasicAuth
 
 import json
 
-from _websocket import WebsocketHandler
+from ._websocket import WebsocketHandler
 
 # The subpath to the Create Read Update Delete portion of the API
 CRUD_PATH = "crud/"

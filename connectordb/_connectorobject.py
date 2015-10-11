@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 
 class ConnectorObject(object):
     """Users, devices and streams are all built upon the base `ConnectorObject`.

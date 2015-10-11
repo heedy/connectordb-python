@@ -8,6 +8,8 @@ Here's how:
     4) Turn server back on
     5) Make sure that reconnect and resubscribe automatically happens
 """
+from __future__ import absolute_import
+from __future__ import print_function
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -22,7 +24,7 @@ if not s.exists():
     s.create({"type":"string"})
 
 def subscriber(stream,data):
-    print stream,data
+    print(stream,data)
 
 s.subscribe(subscriber)
 

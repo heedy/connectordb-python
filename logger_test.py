@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import unittest
 import time
 import os
@@ -143,3 +145,6 @@ class TestLogger(unittest.TestCase):
         self.assertEqual(1, len(l))
 
         l.close()
+
+if __name__ == "__main__":
+    unittest.main()

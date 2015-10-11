@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import unittest
 import time
 import json
@@ -328,3 +330,6 @@ class TestConnectorDB(unittest.TestCase):
         s.unsubscribe()
 
         self.assertTrue(1, len(s))
+
+if __name__ == "__main__":
+    unittest.main()

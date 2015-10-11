@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import apsw  # The default python slite implementatino is not threadsafe, so we use apsw
 import logging
 import time
@@ -6,7 +8,7 @@ import threading
 import json
 from jsonschema import validate
 
-from _connectordb import ConnectorDB, CONNECTORDB_URL
+from ._connectordb import ConnectorDB, CONNECTORDB_URL
 
 
 class Logger(object):
@@ -47,8 +49,7 @@ class Logger(object):
         # Load the database metadata into variables
         c.execute(
             "SELECT apikey,serverurl,lastsynctime,syncperiod FROM metadata;")
-        self.__apikey, self.__serverurl, self.__lastsync, self.__syncperiod = c.next(
-        )
+        self.__apikey, self.__serverurl, self.__lastsync, self.__syncperiod = next(c)
 
         # Load the streams that are being logged
         c.execute("SELECT * FROM streams;")

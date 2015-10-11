@@ -1,5 +1,8 @@
+from __future__ import absolute_import
+
 from .._stream import Stream, query_maker
-from merge import Merge, get_stream
+from .merge import Merge, get_stream
+import six
 
 
 # param_stream adds the stream correctly into the query (depending on what stream parameter was given)
@@ -186,7 +189,7 @@ class Dataset(object):
 
         if colname is None:
             # What do we call this column?
-            if isinstance(stream, basestring):
+            if isinstance(stream, six.string_types):
                 colname = stream
             elif isinstance(stream, Stream):
                 colname = stream.path

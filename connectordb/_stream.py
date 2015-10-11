@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
+from __future__ import absolute_import
 
-from _connectorobject import ConnectorObject
-
-import _user
-import _device
+from ._connectorobject import ConnectorObject
 
 from jsonschema import Draft4Validator
 import json
@@ -214,12 +211,17 @@ class Stream(ConnectorObject):
     @property
     def user(self):
         """user returns the user which owns the given stream"""
-        return _user.User(self.db, self.path.split("/")[0])
+        return User(self.db, self.path.split("/")[0])
 
     @property
     def device(self):
         """returns the device which owns the given stream"""
         splitted_path = self.path.split("/")
 
-        return _device.Device(self.db,
+        return Device(self.db,
                               splitted_path[0] + "/" + splitted_path[1])
+
+
+# The import has to go on the bottom because py3 imports are annoying
+from ._user import User
+from ._device import Device

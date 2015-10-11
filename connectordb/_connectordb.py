@@ -1,10 +1,10 @@
-# -*- coding: utf-8 -*-
+from __future__ import absolute_import
 
-from _connection import DatabaseConnection
+from ._connection import DatabaseConnection
 
-from _device import Device
-from _user import User
-from _stream import Stream
+from ._device import Device
+from ._user import User
+from ._stream import Stream
 
 CONNECTORDB_URL = "https://connectordb.com"
 
