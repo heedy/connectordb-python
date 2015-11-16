@@ -187,7 +187,7 @@ class Logger(object):
     def __runsyncer(self):
         try:
             self.sync()
-        except Exception and e:
+        except Exception as e:
             logging.warn("ConnectorDB sync failed: " + str(e))
         self.__setsync()
 
