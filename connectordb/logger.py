@@ -17,7 +17,7 @@ class Logger(object):
     so that no data is lost, and settings don't need to be reloaded from the database after initial connection.
     """
 
-    def __init__(self, database_file_path, on_create=None, apikey=None, onsyncfail=None):
+    def __init__(self, database_file_path, on_create=None, apikey=None, onsync=None, onsyncfail=None):
         """Logger is started by passing its database file, and an optional callback which is run if the database
         is not initialized, allowing setup code to be only run once"""
         self.database = apsw.Connection(database_file_path)
@@ -64,7 +64,8 @@ class Logger(object):
         self.syncthread = None
         self.__cdb = None
 
-        # Callback that is called when synchronization fails
+        # Callbacks that are called for synchronization
+        self.onsync = onsync
         self.onsyncfail = onsyncfail
 
         # Run the create callback which is for the user to set up the necessary
@@ -132,6 +133,7 @@ class Logger(object):
     def sync(self):
         """Attempt to sync with the ConnectorDB server"""
         logging.debug("Logger: Syncing...")
+        failed = False
         try:
             # Get the connectordb object
             cdb = self.connectordb
@@ -143,9 +145,6 @@ class Logger(object):
                 c = self.database.cursor()
                 for stream in self.streams:
                     s = cdb[stream]
-                    if not s.exists():
-                        raise Exception(
-                            "Stream %s does not exist!" % (stream, ))
 
                     c.execute(
                         "SELECT * FROM cache WHERE stream=? ORDER BY timestamp ASC;",
@@ -166,11 +165,15 @@ class Logger(object):
                             "DELETE FROM cache WHERE stream=? AND timestamp <=?",
                             (stream, datapointArray[-1]["t"]))
                 self.lastsynctime = time.time()
-        except:
+
+                if self.onsync is not None:
+                    self.onsync()
+        except Exception as e:
             # Handle the sync failure callback
+            falied = True
             reraise = True
             if self.onsyncfail is not None:
-                reraise = self.onsyncfail(self)
+                reraise = self.onsyncfail(e)
             if reraise:
                 raise
 
