@@ -113,8 +113,8 @@ class TestConnectorDB(unittest.TestCase):
         self.assertEqual(self.db("baduser").exists(), False)
         self.assertEqual(self.usrdb("test").exists(), False)
 
-        self.assertEqual("admin" in self.db.data, True)
-        self.assertEqual("admin" in self.usrdb.data, False)
+        self.assertEqual(self.db.data["admin"], True)
+        self.assertEqual(self.usrdb.data["admin"], False)
 
         self.assertEqual(self.usrdb.user.name, "python_test")
         self.usrdb.user.email = "testemail@change"
@@ -127,7 +127,7 @@ class TestConnectorDB(unittest.TestCase):
         self.usr.set({"admin": True})
 
         usrdb.refresh()
-        self.assertEqual("admin" in usrdb.data, True)
+        self.assertEqual(usrdb.data["admin"], True)
 
         usrdb.user.nickname = "myuser"
         self.assertEqual(self.db("python_test").nickname, "myuser")
