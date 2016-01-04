@@ -5,7 +5,7 @@ import time
 import os
 
 import connectordb
-from connectordb.logger import Logger
+from connectordb.logger import Logger, DATAPOINT_INSERT_LIMIT
 
 TEST_URL = "localhost:8000"
 
@@ -145,6 +145,32 @@ class TestLogger(unittest.TestCase):
         self.assertEqual(1, len(l))
 
         l.close()
+
+    def test_overflow(self):
+        global DATAPOINT_INSERT_LIMIT
+        dil = DATAPOINT_INSERT_LIMIT
+        DATAPOINT_INSERT_LIMIT = 2
+        s = self.device["mystream"]
+
+        # This time we test existing stream
+        s.create({"type": "string"})
+
+        l = Logger("test.db")
+        l.serverurl = TEST_URL
+        l.apikey = self.apikey
+
+        l.addStream("mystream")
+
+        l.insert("mystream","test1")
+        l.insert("mystream","test2")
+        l.insert("mystream","test3")
+
+        l.sync()
+
+        self.assertEqual(3, len(s))
+        self.assertEqual(0, len(l))
+
+        DATAPOINT_INSERT_LIMIT = dil
 
 if __name__ == "__main__":
     unittest.main()

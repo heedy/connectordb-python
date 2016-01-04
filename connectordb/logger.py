@@ -10,6 +10,8 @@ from jsonschema import validate
 
 from ._connectordb import ConnectorDB, CONNECTORDB_URL
 
+# The maximum number of datapoints to insert in one query
+DATAPOINT_INSERT_LIMIT = 5000
 
 class Logger(object):
     """Logger enables logging datapoints with periodic synchronization to a ConnectorDB database.
@@ -157,6 +159,18 @@ class Logger(object):
                     if len(datapointArray) > 0:
                         logging.debug("%s: syncing %i datapoints" %
                                       (stream, len(datapointArray)))
+
+                        while (len(datapointArray) > DATAPOINT_INSERT_LIMIT):
+                            # We insert datapoints in chunks of a couple thousand so that they fit in the insert size limit of ConnectorDB
+                            s.insert_array(datapointArray[:DATAPOINT_INSERT_LIMIT])
+
+                            # Clear the written datapoints
+                            datapointArray = datapointArray[DATAPOINT_INSERT_LIMIT:]
+
+                            # If there was no error inserting, delete the datapoints from the cache
+                            c.execute(
+                                "DELETE FROM cache WHERE stream=? AND timestamp <?",
+                                (stream, datapointArray[0]["t"]))
 
                         s.insert_array(datapointArray)
 
