@@ -1,6 +1,11 @@
 from __future__ import absolute_import
 
-from urlparse import urljoin
+# python 3 vs 2
+try:
+    from urlparse import urljoin
+except:
+    from urllib.parse import urljoin
+
 from requests import Session
 from requests.auth import HTTPBasicAuth
 
