@@ -83,8 +83,8 @@ class Dataset(object):
 
         Hint: T-Datasets can be useful for plotting data (such as daily or weekly averages).
 
-    :Y-Dataset:
-        Y-datasets allow to generate datasets based not on evenly spaced timestamps, but based upon a stream's values
+    :X-Dataset:
+        X-datasets allow to generate datasets based not on evenly spaced timestamps, but based upon a stream's values
 
         Suppose you have the following data:
 
@@ -100,7 +100,7 @@ class Dataset(object):
             |           |              |   | 11pm      | 79                   |
             +-----------+--------------+---+-----------+----------------------+
 
-        A Y-dataset with Y=Mood Rating, and the interpolator "closest" on Room Temperature would generate:
+        An X-dataset with X=Mood Rating, and the interpolator "closest" on Room Temperature would generate:
 
             +--------------+----------------------+
             | Mood Rating  | Room Temperature (F) |
@@ -129,7 +129,7 @@ class Dataset(object):
 
     """
 
-    def __init__(self, cdb, y=None, t1=None, t2=None, dt=None, limit=None, i1=None, i2=None, transform=None, itransform=None):
+    def __init__(self, cdb, x=None, t1=None, t2=None, dt=None, limit=None, i1=None, i2=None, transform=None, itransform=None):
         """In order to begin dataset generation, you need to specify the reference time range or stream.
 
         To generate a T-dataset::
@@ -146,24 +146,22 @@ class Dataset(object):
         self.cdb = cdb
         self.query = query_maker(t1, t2, limit, i1, i2, transform)
 
-        if y is not None:
+        if x is not None:
             if dt is not None:
                 raise Exception(
-                    "Can't do both T-dataset and Y-dataset at the same time")
-            # Add the stream to the query as the Y-dataset
-            param_stream(self.cdb, self.query, y)
+                    "Can't do both T-dataset and X-dataset at the same time")
+            # Add the stream to the query as the X-dataset
+            param_stream(self.cdb, self.query, x)
         elif dt is not None:
             self.query["dt"] = dt
         else:
-            raise Exception("Dataset must have either y or dt parameter")
+            raise Exception("Dataset must have either x or dt parameter")
 
         self.query["dataset"] = {}
 
-    def addStream(self, stream, interpolator="closest", t1=None, t2=None, dt=None, limit=None, i1=None, i2=None, transform=None, itransform=None, colname=None):
+    def addStream(self, stream, interpolator="closest", t1=None, t2=None, dt=None, limit=None, i1=None, i2=None, transform=None,colname=None):
         """Adds the given stream to the query construction. Additionally, you can choose the interpolator to use for this stream, as well as a special name
         for the column in the returned dataset. If no column name is given, the full stream path will be used.
-
-        The "itransform" parameter specifies a transform to run on the stream AFTER interpolation is completed.
 
         addStream also supports Merge queries. You can insert a merge query instead of a stream, but be sure to name the column::
 
@@ -184,9 +182,6 @@ class Dataset(object):
 
         streamquery["interpolator"] = interpolator
 
-        if itransform is not None:
-            streamquery["itransform"] = itransform
-
         if colname is None:
             # What do we call this column?
             if isinstance(stream, six.string_types):
@@ -197,9 +192,9 @@ class Dataset(object):
                 raise Exception(
                     "Could not find a name for the column! use the 'colname' parameter.")
 
-        if colname in self.query["dataset"] or colname is "y":
+        if colname in self.query["dataset"] or colname is "x":
             raise Exception(
-                "The column name either exists, or is labeled 'y'. Use the colname parameter to change the column name.")
+                "The column name either exists, or is labeled 'x'. Use the colname parameter to change the column name.")
 
         self.query["dataset"][colname] = streamquery
 

@@ -6,12 +6,14 @@ This page is the direct API reference.
 
 The User, Device, and Stream objects all inherit from ConnectorObject, meaning that all methods and properties in ConnectorObject can be accessed from any other object in the core API.
 
-The ConnectorDB object is the API main entrance point, and it inherits from Device. That's right, when logging in to ConnectorDB, you are logging in as a device, and all operations are done in reference to that device::
+The ConnectorDB object is the API main entrance point, and it inherits from Device. When logging in to ConnectorDB, you are logging in as a device, and all operations are done in reference to that device::
 
     import connectordb
     cdb = connectordb.ConnectorDB("apikey")
     #Prints the full username/devicename path of the logged in device
     print cdb.path
+
+This is something you must be aware of when logging in as a user. Using a password actualyl logs you in as the user device, and all operations are done in reference to this device.    
 
 ConnectorObject
 ++++++++++++++++

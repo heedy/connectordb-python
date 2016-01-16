@@ -83,7 +83,7 @@ class TestQuery(unittest.TestCase):
                                                 "d": 81}, {"t": 11,
                                                            "d": 79}])
 
-        ds = Dataset(self.udb, t1=0, t2=8, dt=2)
+        ds = Dataset(self.udb, t1=0, t2=8.1, dt=2)
 
         ds.addStream("temperature", "closest")
 
@@ -133,20 +133,20 @@ class TestQuery(unittest.TestCase):
                 "t": 1,
                 "d": {"temperature": {"t": 2,
                                       "d": 73},
-                      "y": {"t": 1,
+                      "x": {"t": 1,
                             "d": 7}}
             }, {
                 "t": 4,
                 "d": {"temperature": {"t": 5,
                                       "d": 84},
-                      "y": {"t": 4,
+                      "x": {"t": 4,
                             "d": 3}}
             }, {
                 "t": 11,
                 "d":
                 {"temperature": {"t": 11,
                                  "d": 79},
-                 "y": {"t": 11,
+                 "x": {"t": 11,
                        "d": 5}}
             }
         ])
