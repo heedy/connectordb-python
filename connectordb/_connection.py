@@ -36,27 +36,31 @@ class ServerError(Exception):
 
 
 class DatabaseConnection(object):
-    def __init__(self, user_or_apikey, user_password=None, url="https://connectordb.com"):
+    def __init__(self, user_or_apikey=None, user_password=None, url="https://connectordb.com"):
 
         # Set up the API URL
         if not url.startswith("http"):
-            url = "http://" + url
+            url = "https://" + url
         if not url.endswith("/"):
             url = url + "/"
         self.url = urljoin(url, "/api/v1/")
 
-        # ConnectorDB allows login using both basic auth or an apikey url param.
-        # The python client uses basic auth for all logins
-        if user_password is None:
-            # Login by api key - the basic auth login uses "" user and apikey as password
-            user_password = user_or_apikey
-            user_or_apikey = ""
-        auth = HTTPBasicAuth(user_or_apikey, user_password)
-
         # Set up a session, which allows us to reuse connections
         self.r = Session()
-        self.r.auth = auth
         self.r.headers.update({'content-type': 'application/json'})
+
+        auth = None
+        if user_or_apikey is not None:
+            # ConnectorDB allows login using both basic auth or an apikey url param.
+            # The python client uses basic auth for all logins
+            if user_password is None:
+                # Login by api key - the basic auth login uses "" user and apikey as password
+                user_password = user_or_apikey
+                user_or_apikey = ""
+            auth = HTTPBasicAuth(user_or_apikey, user_password)
+            self.r.auth = auth
+
+
 
         # Prepare the websocket
         self.ws = WebsocketHandler(self.url, auth)

@@ -61,12 +61,6 @@ class ConnectorObject(object):
         """Returns the object's name. Object names are immutable (unless logged in is a database admin)"""
         return self.data["name"]
 
-    @name.setter
-    def name(self, new_name):
-        """Attempts to rename the object - this won't end well unless logged in as a database administrator. And even then it is a dangerous thing to do.
-        The recommendation is never to do this. In fact, in the future, name changes might be disabled altogether."""
-        self.set({"name": new_name})
-
     @property
     def nickname(self):
         """Allows to directly set the object's user-friendly nickname.

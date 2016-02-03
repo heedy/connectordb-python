@@ -12,7 +12,7 @@ from jsonschema import SchemaError
 import websocket
 websocket.enableTrace(True)
 
-TEST_URL = "localhost:8000"
+TEST_URL = "http://localhost:8000"
 
 
 class subscriber:
@@ -36,6 +36,7 @@ class subscriber:
 class TestConnectorDB(unittest.TestCase):
     def setUp(self):
         self.db = connectordb.ConnectorDB("test", "test", url=TEST_URL)
+        self.db.user.public = False
         self.usr = self.db("python_test")
         if self.usr.exists():
             self.usr.delete()
@@ -113,8 +114,8 @@ class TestConnectorDB(unittest.TestCase):
         self.assertEqual(self.db("baduser").exists(), False)
         self.assertEqual(self.usrdb("test").exists(), False)
 
-        self.assertEqual(self.db.data["admin"], True)
-        self.assertEqual(self.usrdb.data["admin"], False)
+        self.assertEqual(self.db.user.role, "admin")
+        self.assertEqual(self.usrdb.user.role, "user")
 
         self.assertEqual(self.usrdb.user.name, "python_test")
         self.usrdb.user.email = "testemail@change"
@@ -124,10 +125,11 @@ class TestConnectorDB(unittest.TestCase):
         usrdb = connectordb.ConnectorDB("python_test", "newpass", url=TEST_URL)
         self.assertEqual(usrdb.path, "python_test/user")
 
-        self.usr.set({"admin": True})
+        self.usr.set({"role": "admin"})
 
         usrdb.refresh()
-        self.assertEqual(usrdb.data["admin"], True)
+        self.assertEqual(usrdb.role, "user")
+        self.assertEqual(usrdb.user.role, "admin")
 
         usrdb.user.nickname = "myuser"
         self.assertEqual(self.db("python_test").nickname, "myuser")
@@ -144,7 +146,7 @@ class TestConnectorDB(unittest.TestCase):
         self.assertEqual(3, len(db.user.devices()))
 
         dev = connectordb.ConnectorDB(db.user["mydevice"].apikey, url=TEST_URL)
-        self.assertEqual(1, len(dev.user.devices()))  # Device has no access to other devices
+        self.assertRaises(connectordb.AuthenticationError, dev.user.devices)  # Device has no access to other devices
 
         dev.nickname = "test nickname"
         self.assertEqual(db("python_test/mydevice").nickname, "test nickname")
@@ -156,11 +158,13 @@ class TestConnectorDB(unittest.TestCase):
         dev = connectordb.ConnectorDB(newkey, url=TEST_URL)
         self.assertEqual(dev.nickname, "test nickname")
 
+        db.user["mydevice"].role = "reader"
         self.assertEqual(dev.user.name, "python_test")
 
     def test_stream(self):
         self.assertRaises(SchemaError, self.usrdb["mystream"].create,
                           {"type": "blah blah"})
+        self.assertEqual(self.usrdb.role,"user")
         initialstreams = len(self.usrdb.streams())
         s = self.usrdb["mystream"]
         self.assertFalse(s.exists())

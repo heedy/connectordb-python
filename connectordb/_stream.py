@@ -204,8 +204,8 @@ class Stream(ConnectorObject):
     @property
     def schema(self):
         """Returns the JSON schema of the stream as a python dict"""
-        if "type" in self.data:
-            return json.loads(self.data["type"])
+        if "schema" in self.data:
+            return json.loads(self.data["schema"])
         return None
 
     @property

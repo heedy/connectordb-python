@@ -7,7 +7,7 @@ import os
 import connectordb
 from connectordb.logger import Logger, DATAPOINT_INSERT_LIMIT
 
-TEST_URL = "localhost:8000"
+TEST_URL = "http://localhost:8000"
 
 
 class TestLogger(unittest.TestCase):

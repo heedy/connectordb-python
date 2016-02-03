@@ -34,7 +34,7 @@ class Device(ConnectorObject):
 
     @property
     def apikey(self):
-        """gets the device's api key"""
+        """gets the device's api key. Returns None if apikey not accessible."""
         if "apikey" in self.data:
             return self.data["apikey"]
         return None
@@ -43,6 +43,35 @@ class Device(ConnectorObject):
         """invalidates the device's current api key, and generates a new one"""
         self.set({"apikey": ""})
         return self.metadata["apikey"]
+
+
+    @property
+    def public(self):
+        """gets whether the device is public
+        (this means different things based on connectordb permissions setup - connectordb.com
+        has this be whether the device is publically visible. Devices are individually public/private.)
+        """
+        if "public" in self.data:
+            return self.data["public"]
+        return None
+
+    @public.setter
+    def public(self,new_public):
+        """Attempts to set whether the device is public"""
+        self.set({"public": new_public})
+
+    @property
+    def role(self):
+        """Gets the role of the device. This is the permissions level that the device has. It might
+        not be accessible depending on the permissions setup of ConnectorDB. Returns None if not accessible"""
+        if "role" in self.data:
+            return self.data["role"]
+        return None
+
+    @role.setter
+    def role(self,new_role):
+        """ Attempts to set the device's role"""
+        self.set({"role": new_role})
 
     @property
     def user(self):

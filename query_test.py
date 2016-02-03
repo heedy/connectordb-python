@@ -5,7 +5,7 @@ import unittest
 import connectordb
 from connectordb.query import *
 
-TEST_URL = "localhost:8000"
+TEST_URL = "http://localhost:8000"
 
 
 class TestQuery(unittest.TestCase):

@@ -29,23 +29,28 @@ class WebsocketHandler(object):
             ws = WebsocketHandler("https://connectordb.com",req)
         """
 
+        # The websocket is at /api/v1/websocket, and the server_url includes the /api/v1/
+        server_url += "websocket"
+
         # First we must get the websocket URI from the server URL
         self.ws_url = "wss://" + server_url[8:]
         if server_url.startswith("http://"):
             self.ws_url = "ws://" + server_url[7:]
 
-        # Next, we use a cheap hack to get the basic auth header out of the auth object.
-        # This snippet ends up with us having an array of the necessary headers
-        # to perform authentication.
-        class auth_extractor():
-            def __init__(self):
-                self.headers = {}
+        # If we have auth
+        if basic_auth is not None:
+            # Next, we use a cheap hack to get the basic auth header out of the auth object.
+            # This snippet ends up with us having an array of the necessary headers
+            # to perform authentication.
+            class auth_extractor():
+                def __init__(self):
+                    self.headers = {}
 
-        extractor = auth_extractor()
-        basic_auth(extractor)
-        self.headers = []
-        for header in extractor.headers:
-            self.headers.append("%s: %s" % (header, extractor.headers[header]))
+            extractor = auth_extractor()
+            basic_auth(extractor)
+            self.headers = []
+            for header in extractor.headers:
+                self.headers.append("%s: %s" % (header, extractor.headers[header]))
 
         # Set up the variable which will hold all of the subscriptions
         self.subscriptions = {}
@@ -242,7 +247,8 @@ class WebsocketHandler(object):
         logging.debug("ConnectorDB:WS: Websocket closed")
 
         # Turn off the ping timer
-        self.pingtimer.cancel()
+        if self.pingtimer is not None:
+            self.pingtimer.cancel()
 
         self.disconnected_time = time.time()
         if self.status == "disconnecting":

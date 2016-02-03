@@ -22,7 +22,7 @@ class ConnectorDB(Device):
         print cdb.path
 
     """
-    def __init__(self, user_or_apikey, user_password=None, url=CONNECTORDB_URL):
+    def __init__(self, user_or_apikey=None, user_password=None, url=CONNECTORDB_URL):
 
         db = DatabaseConnection(user_or_apikey, user_password, url)
 
