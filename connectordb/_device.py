@@ -4,9 +4,10 @@ from ._connectorobject import ConnectorObject
 
 
 class Device(ConnectorObject):
-    def create(self):
-        """Creates the device."""
-        self.metadata = self.db.create(self.path).json()
+    def create(self, public=False):
+        """Creates the device. Attempts to create private devices by default,
+        but if public is set to true, creates public devices."""
+        self.metadata = self.db.create(self.path+"?public="+str(public).lower()).json()
 
     def streams(self):
         """Returns the list of streams that belong to the device"""

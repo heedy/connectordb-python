@@ -108,6 +108,19 @@ class ConnectorDB(Device):
     def __repr__(self):
         return "[ConnectorDB:%s]" % (self.path, )
 
+    def users(self):
+            """Returns the list of users in the database"""
+            result = self.db.read("", {"q": "ls"})
+
+            if result is None or result.json() is None:
+                return []
+            users = []
+            for u in result.json():
+                usr = self(u["name"])
+                usr.metadata = u
+                users.append(usr)
+            return users
+
     def ping(self):
         """Pings the ConnectorDB server. Useful for checking if the connection is valid"""
         return self.db.ping()

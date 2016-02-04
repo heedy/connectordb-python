@@ -68,6 +68,9 @@ class TestConnectorDB(unittest.TestCase):
         self.assertTrue(len(i["interpolators"]) > 1)
         self.assertTrue(len(i["transforms"]) > 1)
 
+        self.assertTrue(len(self.db.users())> 1)
+        self.assertRaises(connectordb.AuthenticationError,self.usrdb.users)
+
     def test_counting(self):
         db = self.db
         self.assertGreaterEqual(db.count_users(), 1)
@@ -106,6 +109,8 @@ class TestConnectorDB(unittest.TestCase):
         self.assertEqual(curusers, db.count_users())
         self.assertEqual(curdevices, db.count_devices())
         self.assertEqual(curstreams, db.count_streams())
+
+        usr.delete()
 
     def test_user(self):
         self.assertEqual(self.db.user.exists(), True)

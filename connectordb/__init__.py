@@ -17,10 +17,18 @@ The client enables quick usage of the database for IoT stuff and data analysis::
         t = get_temperature()
         temp.insert(t)
 
+The client also allows anonymous access of database values if the database is configured
+to allow public access:
+
+    import connectordb
+    cdb = connectordb.ConnectorDB()
+
+    usr = cdb("myuser")
+
 """
 from __future__ import absolute_import
 
 from ._connectordb import *
 from ._connection import AuthenticationError, ServerError
 
-__version__ = "0.3.0a3"
+__version__ = "0.3.0a4"
