@@ -49,6 +49,16 @@ class DatabaseConnection(object):
         self.r = Session()
         self.r.headers.update({'content-type': 'application/json'})
 
+        # Prepare the websocket
+        self.ws = WebsocketHandler(self.url,None)
+
+        # Set the authentication if any
+        self.setauth(user_or_apikey,user_password)
+
+    def setauth(self,user_or_apikey=None, user_password=None):
+        """ setauth sets the authentication header for use in the session.
+        It is for use when apikey is updated or something of the sort, such that
+        there is a seamless experience. """
         auth = None
         if user_or_apikey is not None:
             # ConnectorDB allows login using both basic auth or an apikey url param.
@@ -60,10 +70,8 @@ class DatabaseConnection(object):
             auth = HTTPBasicAuth(user_or_apikey, user_password)
             self.r.auth = auth
 
-
-
-        # Prepare the websocket
-        self.ws = WebsocketHandler(self.url, auth)
+        # Set the websocket's authentication
+        self.ws.setauth(auth)
 
     def close(self):
         """Closes the active connections to ConnectorDB"""

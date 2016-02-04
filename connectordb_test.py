@@ -153,9 +153,7 @@ class TestConnectorDB(unittest.TestCase):
 
         apikey = dev.apikey
         newkey = dev.reset_apikey()
-        self.assertRaises(connectordb.AuthenticationError, dev.refresh)
         self.assertFalse(apikey == newkey)
-        dev = connectordb.ConnectorDB(newkey, url=TEST_URL)
         self.assertEqual(dev.nickname, "test nickname")
 
         db.user["mydevice"].role = "reader"

@@ -26,7 +26,20 @@ class ConnectorDB(Device):
 
         db = DatabaseConnection(user_or_apikey, user_password, url)
 
-        Device.__init__(self, db, db.ping())
+        # ConnectorDB uses bcrypt by default for password hashing. While great for security
+        # of passwords, it is extremely expensive, so it slows down queries. So, if we logged in
+        # as a user with password, attempt to get the user device apikey to use for future authentication
+        # so that queries are fast
+        if user_password is not None:
+            # Logins happen as a user device
+            Device.__init__(self, db, user_or_apikey + "/user")
+
+            if self.apikey is not None:
+                # Reset the auth to be apikey
+                db.setauth(self.apikey)
+        else:
+            # We logged in as a device - we have to ping the server to get our name
+            Device.__init__(self, db, db.ping())
 
     def __call__(self, path):
         """Enables getting arbitrary users/devices/streams in a simple way. Just call the object
@@ -47,6 +60,13 @@ class ConnectorDB(Device):
     def close(self):
         """shuts down all active connections to ConnectorDB"""
         self.db.close()
+
+    def reset_apikey(self):
+        """invalidates the device's current api key, and generates a new one. Resets current auth to use the new apikey,
+        since the change would have future queries fail if they use the old api key."""
+        apikey = Device.reset_apikey(self)
+        self.db.setauth(apikey)
+        return apikey
 
     def count_users(self):
         """Gets the total number of users registered with the database. Only available to administrator."""

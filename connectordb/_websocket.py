@@ -37,20 +37,7 @@ class WebsocketHandler(object):
         if server_url.startswith("http://"):
             self.ws_url = "ws://" + server_url[7:]
 
-        # If we have auth
-        if basic_auth is not None:
-            # Next, we use a cheap hack to get the basic auth header out of the auth object.
-            # This snippet ends up with us having an array of the necessary headers
-            # to perform authentication.
-            class auth_extractor():
-                def __init__(self):
-                    self.headers = {}
-
-            extractor = auth_extractor()
-            basic_auth(extractor)
-            self.headers = []
-            for header in extractor.headers:
-                self.headers.append("%s: %s" % (header, extractor.headers[header]))
+        self.setauth(basic_auth)
 
         # Set up the variable which will hold all of the subscriptions
         self.subscriptions = {}
@@ -78,6 +65,25 @@ class WebsocketHandler(object):
         # setting up reconnect delays correctly
         self.connected_time = 0
         self.disconnected_time = 0
+
+    def setauth(self,basic_auth):
+        """ setauth can be used during runtime to make sure that authentication is reset.
+        it can be used when changing passwords/apikeys to make sure reconnects succeed """
+        self.headers = []
+        # If we have auth
+        if basic_auth is not None:
+            # we use a cheap hack to get the basic auth header out of the auth object.
+            # This snippet ends up with us having an array of the necessary headers
+            # to perform authentication.
+            class auth_extractor():
+                def __init__(self):
+                    self.headers = {}
+
+            extractor = auth_extractor()
+            basic_auth(extractor)
+
+            for header in extractor.headers:
+                self.headers.append("%s: %s" % (header, extractor.headers[header]))
 
     @property
     def status(self):
