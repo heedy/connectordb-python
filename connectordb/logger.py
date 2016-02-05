@@ -90,6 +90,11 @@ class Logger(object):
         """Attempts to ping the currently connected ConnectorDB database. Returns an error if it fails to connect"""
         self.connectordb.ping()
 
+    def cleardata(self):
+        """Deletes all cached data without syncing it to the server"""
+        c = self.database.cursor()
+        c.execute("DELETE FROM cache;")
+
     def close(self):
         """Closes the database connections and stops all synchronization."""
         self.stop()

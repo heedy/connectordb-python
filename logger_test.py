@@ -173,5 +173,23 @@ class TestLogger(unittest.TestCase):
 
         DATAPOINT_INSERT_LIMIT = dil
 
+    def test_clear(self):
+        s = self.device["mystream"]
+
+        # This time we test existing stream
+        s.create({"type": "string"})
+
+        l = Logger("test.db")
+        l.serverurl = TEST_URL
+        l.apikey = self.apikey
+
+        l.addStream("mystream")
+
+        l.insert("mystream","test1")
+        l.insert("mystream","test2")
+
+        l.cleardata()
+        self.assertEqual(len(l),0)
+
 if __name__ == "__main__":
     unittest.main()
