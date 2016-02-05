@@ -31,4 +31,4 @@ from __future__ import absolute_import
 from ._connectordb import *
 from ._connection import AuthenticationError, ServerError
 
-__version__ = "0.3.0a4"
+__version__ = "0.3.0a5"

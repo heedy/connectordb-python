@@ -19,7 +19,7 @@ class Logger(object):
     so that no data is lost, and settings don't need to be reloaded from the database after initial connection.
     """
 
-    def __init__(self, database_file_path, on_create=None, apikey=None, onsync=None, onsyncfail=None):
+    def __init__(self, database_file_path, on_create=None, apikey=None, onsync=None, onsyncfail=None, syncraise=False):
         """Logger is started by passing its database file, and an optional callback which is run if the database
         is not initialized, allowing setup code to be only run once"""
         self.database = apsw.Connection(database_file_path)
@@ -70,6 +70,9 @@ class Logger(object):
         self.onsync = onsync
         self.onsyncfail = onsyncfail
 
+        # Whether or not failed synchronization raises an error
+        self.syncraise = syncraise
+
         # Run the create callback which is for the user to set up the necessary
         # values to ensure a connection - only if the database was just created
         if on_create is not None and row_number == 0:
@@ -82,6 +85,10 @@ class Logger(object):
             logging.debug("Logger: Connecting to " + self.serverurl)
             self.__cdb = ConnectorDB(self.apikey, url=self.serverurl)
         return self.__cdb
+
+    def ping(self):
+        """Attempts to ping the currently connected ConnectorDB database. Returns an error if it fails to connect"""
+        self.connectordb.ping()
 
     def close(self):
         """Closes the database connections and stops all synchronization."""
@@ -185,7 +192,7 @@ class Logger(object):
         except Exception as e:
             # Handle the sync failure callback
             falied = True
-            reraise = True
+            reraise = self.syncraise
             if self.onsyncfail is not None:
                 reraise = self.onsyncfail(e)
             if reraise:
@@ -213,16 +220,14 @@ class Logger(object):
         worry about syncing with ConnectorDB - you just insert into the Logger, and the Logger
         will by synced every syncperiod."""
 
-        # This makes sure a connection can be made to the database
-        self.connectordb
-
         with self.synclock:
             if self.syncthread is not None:
                 logging.warn(
                     "Logger: Start called on a syncer that is already running")
                 return
 
-        self.__setsync()
+        self.sync() # Attempt a sync right away
+        self.__setsync() # Set up background sync
 
     def stop(self):
         """Stops the background synchronization thread"""

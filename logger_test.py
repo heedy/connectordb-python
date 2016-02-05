@@ -51,6 +51,7 @@ class TestLogger(unittest.TestCase):
 
         self.assertFalse(s.exists())
         l = Logger("test.db", on_create=test_create)
+        l.ping()
         self.assertTrue(s.exists())
 
         self.assertEqual("logger_test/mydevice", l.name)
