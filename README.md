@@ -1,23 +1,17 @@
-[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/connectordb/connectordb-python/blob/master/LICENSE)
-[![Documentation Status](https://readthedocs.org/projects/connectordb-python/badge/?version=latest)](http://connectordb-python.readthedocs.org/en/latest/?badge=latest)
-[Read the full documentation here](http://connectordb-python.readthedocs.org/en/latest/)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/connectordb/connectordb-python/blob/master/LICENSE) [![PyPI version](https://badge.fury.io/py/connectordb.svg)](https://badge.fury.io/py/connectordb) [![Documentation Status](https://readthedocs.org/projects/connectordb-python/badge/?version=latest)](http://connectordb-python.readthedocs.org/en/latest/?badge=latest) [Read the full documentation here](http://connectordb-python.readthedocs.org/en/latest/)
 
-ConnectorDB Python Interface
-=====
-
+# ConnectorDB Python Client
 This is a mini-crash-course in the ConnectorDB python interface
 
 To install:
+
 ```python
 pip install connectordb
 ```
 
-If on ubuntu, you might want to install `python-apsw` before running the above command.
-You can look at the dependencies in setup.py.
+If on ubuntu, you might want to install `python-apsw` before running the above command. You can look at the dependencies in setup.py.
 
-Logging
-----------------
-
+## Logging
 The simplest, and most common task is logging data. Suppose we have a little weather station that gives us the temperature every minute.
 
 ```python
@@ -54,9 +48,7 @@ while True:
     l.insert("temperature",getTemperature())
 ```
 
-ConnectorDB Basics
---------------------
-
+## ConnectorDB Basics
 The logger is a convenient wrapper for gathering data. When wanting to operate on the database directly, you will want to use the `ConnectorDB` object:
 
 ```python
@@ -78,9 +70,7 @@ print "mystream has",len(mystream),"datapoint"
 print mystream[0]["d"]
 ```
 
-Subscriptions
--------------------
-
+## Subscriptions
 You can subscribe to streams, so that you get data the moment it is written to the database.
 
 ```python
@@ -100,7 +90,6 @@ mystream.subscribe(callbackFunction)
 
 #After inserting, callbackFunction will run!
 mystream.insert("Hello World!")
-
 ```
 
 If you are implementing a downlink stream (a stream that accepts input from other devices, such as a light switch), subscribe to the downlink:
