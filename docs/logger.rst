@@ -43,6 +43,12 @@ You can use the Logger to cache data until a sync can happen::
 	    time.sleep(60)
 	    l.insert("temperature",getTemperature())
 
+The logger requires the python-apsw package to work. It is a thread-safe sqlite wrapper, which is used
+to safely store your data between synchronization attempts.
+
+On ubuntu, you can run ``apt-get install python-apsw``. On windows, you will need to download the extension package from http://www.lfd.uci.edu/~gohlke/pythonlibs/#apsw , and install
+using pip.
+
 Logger
 ++++++++++++++++
 

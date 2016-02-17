@@ -13,7 +13,16 @@ The ConnectorDB object is the API main entrance point, and it inherits from Devi
     #Prints the full username/devicename path of the logged in device
     print cdb.path
 
-This is something you must be aware of when logging in as a user. Using a password actualyl logs you in as the user device, and all operations are done in reference to this device.    
+This is something you must be aware of when logging in as a user. Using a password actually logs you in as the user device, and all operations are done in reference to this device.
+Therefore, when logging in as a user, you will need to do the following::
+
+    import connectordb
+    cdb = connectordb.ConnectorDB("username","password")
+    # cdb is now the username/user device
+    myuser = cdb.user
+    # myuser is the "username" user, which can list devices
+    print myuser.devices()
+
 
 ConnectorObject
 ++++++++++++++++
@@ -25,7 +34,7 @@ ConnectorObject
 
 ConnectorDB
 ++++++++++++++++
-    
+
 .. automodule:: connectordb._connectordb
     :members:
     :undoc-members:
@@ -37,7 +46,7 @@ User
     :members:
     :undoc-members:
     :show-inheritance:
-    
+
 Device
 ++++++++++++++++
 
@@ -45,7 +54,7 @@ Device
     :members:
     :undoc-members:
     :show-inheritance:
-    
+
 Stream
 ++++++++++++++++
 .. automodule:: connectordb._stream
@@ -53,4 +62,3 @@ Stream
     :undoc-members:
     :special-members:
     :show-inheritance:
-    
