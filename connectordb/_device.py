@@ -4,10 +4,26 @@ from ._connectorobject import ConnectorObject
 
 
 class Device(ConnectorObject):
-    def create(self, public=False):
+    def create(self, public=False, **kwargs):
         """Creates the device. Attempts to create private devices by default,
-        but if public is set to true, creates public devices."""
-        self.metadata = self.db.create(self.path+"?public="+str(public).lower()).json()
+        but if public is set to true, creates public devices.
+
+        You can also set other default properties by passing in the relevant information.
+        For example, setting a device with the given nickname and description::
+
+            dev.create(nickname="mydevice", description="This is an example")
+
+        Furthermore, ConnectorDB supports creation of a device's streams immediately,
+        which can considerably speed up device setup::
+
+            dev.create(streams={
+                "stream1": {"schema": "{\"type\":\"number\"}"}
+            })
+
+        Note that the schema must be encoded as a string when creating in this format.
+        """
+        kwargs["public"] = public
+        self.metadata = self.db.create(self.path,kwargs).json()
 
     def streams(self):
         """Returns the list of streams that belong to the device"""

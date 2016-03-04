@@ -51,6 +51,10 @@ class TestConnectorDB(unittest.TestCase):
             self.usr.delete()
         except:
             pass
+        try:
+            self.db("myuser").delete()
+        except:
+            pass
         self.db.close()
 
     def test_authfail(self):
@@ -171,7 +175,7 @@ class TestConnectorDB(unittest.TestCase):
         initialstreams = len(self.usrdb.streams())
         s = self.usrdb["mystream"]
         self.assertFalse(s.exists())
-        s.create({"type": "string"})
+        s.create({"type": "string"},datatype="string.text")
         self.assertTrue(s.exists())
         self.assertEqual(len(self.usrdb.streams()), initialstreams + 1)
 
@@ -180,12 +184,15 @@ class TestConnectorDB(unittest.TestCase):
 
         self.assertEqual(s.ephemeral, False)
         self.assertEqual(s.downlink, False)
+        self.assertEqual(s.datatype,"string.text")
         s.ephemeral = True
         self.assertEqual(s.ephemeral, True)
         self.assertEqual(s.downlink, False)
         s.downlink = True
         self.assertEqual(s.ephemeral, True)
         self.assertEqual(s.downlink, True)
+        s.datatype="lol.lol"
+        self.assertEqual(s.datatype,"lol.lol")
 
         s.delete()
         self.assertFalse(s.exists())
@@ -337,6 +344,43 @@ class TestConnectorDB(unittest.TestCase):
         s.unsubscribe()
 
         self.assertTrue(1, len(s))
+
+    def test_multicreate(self):
+        mydevice = self.usrdb.user["mydevice"]
+        mydevice.create(streams={
+            "stream1": {
+                "nickname": "My Train",
+                "schema":"{\"type\":\"string\"}"
+            }
+        })
+        self.assertTrue(mydevice.exists())
+        self.assertTrue(mydevice["stream1"].exists())
+        self.assertEqual(mydevice["stream1"].nickname,"My Train")
+
+        self.db("myuser").create("my@email","mypass",description="choo choo",devices={
+            "device1": {
+                "streams":{
+                    "stream1": {
+                        "nickname": "My Train",
+                        "schema":"{\"type\":\"string\"}"
+                    }
+                }
+            }
+        },streams={
+            "mstream1": {
+                "nickname": "My Train2",
+                "schema":"{\"type\":\"string\"}"
+            }
+        })
+
+        usr = self.db("myuser")
+        self.assertTrue(usr.exists())
+        self.assertTrue(usr["user"]["mstream1"].exists())
+        self.assertTrue(usr["device1"].exists())
+        self.assertTrue(usr["device1"]["stream1"].exists())
+
+        usr.delete()
+
 
 if __name__ == "__main__":
     unittest.main()

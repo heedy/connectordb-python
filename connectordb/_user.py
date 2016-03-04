@@ -4,13 +4,37 @@ from ._connectorobject import ConnectorObject
 
 
 class User(ConnectorObject):
-    def create(self, email, password, role="user", public=True):
-        """Creates the given user - using the passed in email and password"""
+    def create(self, email, password, role="user", public=True, **kwargs):
+        """Creates the given user - using the passed in email and password.
+
+        You can also set other default properties by passing in the relevant information::
+
+            usr.create("my@email","mypass",description="I like trains.")
+
+        Furthermore, ConnectorDB permits immediate initialization of an entire user tree,
+        so that you can create all relevant devices and streams in one go.
+
+            usr.create("my@email","mypass",devices={
+                "device1": {
+                    "nickname": "My train",
+                    "streams": {
+                        "stream1": {
+                            "schema": "{\"type\":\"string\"}",
+                            "datatype": "train.choochoo"
+                        }
+                    },
+                }
+            })
+
+        The user and meta devices are created by default. If you want to add streams to the user device,
+        use the "streams" option in place of devices in create.
+        """
+        kwargs["email"] = email
+        kwargs["password"] = password
+        kwargs["role"] = role
+        kwargs["public"] = public
         self.metadata = self.db.create(
-            self.path, {"email": email,
-                        "password": password,
-                        "role": role,
-                        "public": public}).json()
+            self.path, kwargs).json()
 
     def set_password(self, new_password):
         """Sets a new password for the user"""

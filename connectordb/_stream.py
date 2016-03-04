@@ -34,10 +34,18 @@ def query_maker(t1=None, t2=None, limit=None, i1=None, i2=None, transform=None):
 
 
 class Stream(ConnectorObject):
-    def create(self, schema):
-        """Creates a stream given a JSON schema encoded as a python dict"""
+    def create(self, schema, **kwargs):
+        """Creates a stream given a JSON schema encoded as a python dict. You can also add other properties
+        of the stream, such as the icon, datatype or description. Create accepts both a string schema and
+        a dict-encoded schema."""
+        if isinstance(schema,basestring):
+            strschema = schema
+            schema = json.loads(schema)
+        else:
+            strschema = json.dumps(schema)
         Draft4Validator.check_schema(schema)
-        self.metadata = self.db.create(self.path, schema).json()
+        kwargs["schema"] = strschema
+        self.metadata = self.db.create(self.path, kwargs).json()
 
     def insert_array(self, datapoint_array, restamp=False):
         """given an array of datapoints, inserts them to the stream. This is different from insert(),
@@ -175,6 +183,16 @@ class Stream(ConnectorObject):
 
     # -----------------------------------------------------------------------
     # Following are getters and setters of the stream's properties
+
+    @property
+    def datatype(self):
+        """returns the stream's registered datatype. The datatype suggests how the stream can be processed."""
+        if "datatype" in self.data:
+            return self.data["datatype"]
+        return ""
+    @datatype.setter
+    def datatype(self,set_datatype):
+        self.set({"datatype": set_datatype})
 
     @property
     def downlink(self):
