@@ -12,7 +12,7 @@ class User(ConnectorObject):
             usr.create("my@email","mypass",description="I like trains.")
 
         Furthermore, ConnectorDB permits immediate initialization of an entire user tree,
-        so that you can create all relevant devices and streams in one go.
+        so that you can create all relevant devices and streams in one go::
 
             usr.create("my@email","mypass",devices={
                 "device1": {
