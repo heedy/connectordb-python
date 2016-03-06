@@ -7,7 +7,7 @@ install:
     - pip install -r requirements.txt
     - wget -O cdb.tar.gz https://connectordb.com/www/connectordb0.3.0a1.tar.gz
     - tar xvzf cdb.tar.gz
-    - export PATH=$HOME/bin:$PATH
+    - export PATH=$TRAVIS_BUILD_DIR/bin:$PATH
 
 before_script:
     - connectordb create testdb --test
