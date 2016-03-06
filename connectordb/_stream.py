@@ -5,6 +5,12 @@ from ._connectorobject import ConnectorObject
 from jsonschema import Draft4Validator
 import json
 
+# https://github.com/oxplot/fysom/issues/1
+try:
+    unicode = unicode
+except NameError:
+    basestring = (str,bytes)
+
 
 def query_maker(t1=None, t2=None, limit=None, i1=None, i2=None, transform=None):
     """query_maker takes the optional arguments and constructs a json query for a stream's

@@ -12,6 +12,6 @@ install:
 before_script:
     - connectordb create testdb --test
     - connectordb start testdb
-    - connectordb run testdb &
+    - connectordb -l=ERROR run testdb &
 
 script: nosetests
