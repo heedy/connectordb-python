@@ -1,0 +1,17 @@
+language: python
+python:
+    - "2.7"
+    - "3.5"
+
+install:
+    - pip install -r requirements.txt
+    - wget -O cdb.tar.gz https://connectordb.com/www/connectordb0.3.0a1.tar.gz
+    - tar xvzf cdb.tar.gz
+    - export PATH=$HOME/bin:$PATH
+
+after_install:
+    - connectordb create testdb --test
+    - connectordb start testdb
+    - connectordb run testdb &
+
+script: nosetests
