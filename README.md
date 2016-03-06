@@ -127,3 +127,21 @@ mystream.subscribe(callbackFunction,downlink=True)
 while True:
     time.sleep(100)
 ```
+
+
+## Testing
+
+Running ConnectorDB tests requires initalizing ConnectorDB in test mode:
+
+```
+connectordb create testdb --test
+connectordb start testdb
+connectordb run testdb
+```
+
+Once ConnectorDB is running:
+
+```
+pip install -r requirements.txt
+nosetests
+```
