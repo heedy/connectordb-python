@@ -17,7 +17,7 @@ class Device(ConnectorObject):
         which can considerably speed up device setup::
 
             dev.create(streams={
-                "stream1": {"schema": "{\"type\":\"number\"}"}
+                "stream1": {"schema": '{\"type\":\"number\"}'}
             })
 
         Note that the schema must be encoded as a string when creating in this format.
