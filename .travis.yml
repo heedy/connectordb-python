@@ -9,7 +9,7 @@ install:
     - tar xvzf cdb.tar.gz
     - export PATH=$HOME/bin:$PATH
 
-after_install:
+before_script:
     - connectordb create testdb --test
     - connectordb start testdb
     - connectordb run testdb &
