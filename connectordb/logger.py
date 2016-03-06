@@ -36,7 +36,7 @@ class Logger(object):
         # Now check if there is already metadata in the table, and if not, insert new metadata,
         # and run the on_create callback
         c.execute("SELECT COUNT(*) FROM metadata;")
-        row_number = c.next()[0]
+        row_number = next(c)[0]
         if row_number == 0:
             logging.debug("Logger: Creating new database")
             # The default values are as follows:
@@ -245,7 +245,7 @@ class Logger(object):
         """Returns the number of datapoints currently cached"""
         c = self.database.cursor()
         c.execute("SELECT COUNT() FROM cache;")
-        return c.next()[0]
+        return next(c)[0]
 
     def __contains__(self, streamname):
         """Returns whether the logger is caching the given stream name"""
@@ -327,7 +327,7 @@ class Logger(object):
         """
         c = self.database.cursor()
         c.execute("SELECT userdatajson FROM metadata;")
-        return json.loads(c.next()[0])
+        return json.loads(next(c)[0])
 
     @data.setter
     def data(self, value):
