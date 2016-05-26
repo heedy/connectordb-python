@@ -92,20 +92,15 @@ class TestQuery(unittest.TestCase):
         self.assertEqual(5, len(res))
         self.assertListEqual(
             res, [{
-                "d": {"temperature": {"t": 2,
-                                      "d": 73}}
+                "d": {"temperature": 73}
             }, {"t": 2,
-                "d": {"temperature": {"t": 2,
-                                      "d": 73}
+                "d": {"temperature":  73
                       }}, {"t": 4,
-                           "d": {"temperature": {"t": 5,
-                                                 "d": 84}}},
+                           "d": {"temperature": 84}},
                   {"t": 6,
-                   "d": {"temperature": {"t": 5,
-                                         "d": 84}
+                   "d": {"temperature": 84
                          }}, {"t": 8,
-                              "d": {"temperature": {"t": 8,
-                                                    "d": 81}}}])
+                              "d": {"temperature": 81}}])
 
     def test_ydataset(self):
         s1 = self.udb["temperature"]
@@ -131,23 +126,17 @@ class TestQuery(unittest.TestCase):
         self.assertListEqual(res, [
             {
                 "t": 1,
-                "d": {"temperature": {"t": 2,
-                                      "d": 73},
-                      "x": {"t": 1,
-                            "d": 7}}
+                "d": {"temperature": 73,
+                      "x":  7}
             }, {
                 "t": 4,
-                "d": {"temperature": {"t": 5,
-                                      "d": 84},
-                      "x": {"t": 4,
-                            "d": 3}}
+                "d": {"temperature":  84,
+                      "x": 3}
             }, {
                 "t": 11,
                 "d":
-                {"temperature": {"t": 11,
-                                 "d": 79},
-                 "x": {"t": 11,
-                       "d": 5}}
+                {"temperature":  79,
+                 "x":  5}
             }
         ])
 

@@ -4,6 +4,7 @@ import apsw  # The default python slite implementatino is not threadsafe, so we 
 import logging
 import time
 import threading
+import os
 
 import json
 from jsonschema import validate
@@ -21,7 +22,10 @@ class Logger(object):
 
     def __init__(self, database_file_path, on_create=None, apikey=None, onsync=None, onsyncfail=None, syncraise=False):
         """Logger is started by passing its database file, and an optional callback which is run if the database
-        is not initialized, allowing setup code to be only run once"""
+        is not initialized, allowing setup code to be only run once.
+        
+        The on_create callback can optionally be used to initialize the necessary api keys and such.
+        If on_create returns False or raises an error, the uninitialized database file will be removed."""
         self.database = apsw.Connection(database_file_path)
         c = self.database.cursor()
 
@@ -76,7 +80,15 @@ class Logger(object):
         # Run the create callback which is for the user to set up the necessary
         # values to ensure a connection - only if the database was just created
         if on_create is not None and row_number == 0:
-            on_create(self)
+            try:
+                if False == on_create(self):
+                    raise Exception("on_create returned False - logger is invalid")
+            except:
+                # If there was a failure to run on_create, delete the database file,
+                # so that runing the program again will not use the invalid file.
+                self.database.close()
+                os.remove(database_file_path)
+                raise
 
     @property
     def connectordb(self):
@@ -143,6 +155,24 @@ class Logger(object):
         c = self.database.cursor()
         c.execute("INSERT INTO cache VALUES (?,?,?);",
                   (streamname, time.time(), value))
+                  
+    def insert_many(self,data_dict):
+        """ Inserts data into the cache, if the data is a dict of the form {streamname: [{"t": timestamp,"d":data,...]}"""
+        c = self.database.cursor()
+        c.execute("BEGIN TRANSACTION;")
+        try:
+            for streamname in data_dict:
+                if streamname not in self.streams:
+                    raise Exception("The stream '%s' was not found" % (streamname, ))
+                for dp in data_dict[streamname]:
+                    validate(dp["d"], self.streams[streamname])
+                    c.execute("INSERT INTO cache VALUES (?,?,?);",
+                                (streamname, dp["t"], dp["d"]))
+        except:
+            c.execute("ROLLBACK;")
+            raise
+        c.exectute("COMMIT;")
+        
 
     def sync(self):
         """Attempt to sync with the ConnectorDB server"""
