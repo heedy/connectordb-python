@@ -12,7 +12,7 @@ except NameError:
     basestring = (str,bytes)
 
 
-def query_maker(t1=None, t2=None, limit=None, i1=None, i2=None, transform=None):
+def query_maker(t1=None, t2=None, limit=None, i1=None, i2=None, transform=None, downlink=False):
     """query_maker takes the optional arguments and constructs a json query for a stream's
     datapoints using it::
         #{"t1": 5, "transform": "if $ > 5"}
@@ -33,9 +33,17 @@ def query_maker(t1=None, t2=None, limit=None, i1=None, i2=None, transform=None):
             params["i1"] = i1
         if i2 is not None:
             params["i2"] = i2
+    
+    # If no range is given, query whole stream
+    if len(params) == 0:
+        params["i1"] = 0
+        params["i2"] = 0
 
     if transform is not None:
         params["transform"] = transform
+    if downlink:
+        params["downlink"] = True
+        
     return params
 
 
@@ -89,6 +97,10 @@ class Stream(ConnectorObject):
 
         """
         self.insert_array([{"d": data}], restamp=True)
+        
+    def append(self,data):
+        """ Same as insert, using the pythonic array name """
+        self.insert(data)
 
     def subscribe(self, callback, transform="", downlink=False):
         """Subscribes to the stream, running the callback function each time datapoints are inserted into
@@ -138,7 +150,7 @@ class Stream(ConnectorObject):
 
         return self.db.unsubscribe(streampath, transform)
 
-    def __call__(self, t1=None, t2=None, limit=None, i1=None, i2=None, transform=None):
+    def __call__(self, t1=None, t2=None, limit=None, i1=None, i2=None, downlink=False, transform=None):
         """By calling the stream as a function, you can query it by either time range or index,
         and further you can perform a custom transform on the stream::
 
@@ -150,7 +162,7 @@ class Stream(ConnectorObject):
             stream(transform="sum | if last")
 
         """
-        params = query_maker(t1, t2, limit, i1, i2, transform)
+        params = query_maker(t1, t2, limit, i1, i2, transform,downlink)
 
         # In order to avoid accidental requests for full streams, ConnectorDB does not permit requests
         # without any url parameters, so we set i1=0 if we are requesting the full stream
@@ -178,10 +190,13 @@ class Stream(ConnectorObject):
 
         # The query is a slice - return the range
         return self(i1=getrange.start, i2=getrange.stop)
+        
+    def length(self,downlink=False):
+        return int(self.db.read(self.path + "/data", {"q": "length","downlink":downlink}).text)
 
     def __len__(self):
         """taking len(stream) returns the number of datapoints saved within the database for the stream"""
-        return int(self.db.read(self.path + "/data", {"q": "length"}).text)
+        return self.length()
 
     def __repr__(self):
         """Returns a string representation of the stream"""

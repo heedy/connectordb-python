@@ -77,3 +77,16 @@ class ConnectorObject(object):
     def nickname(self, new_nickname):
         """Sets the object's user-friendly nickname"""
         self.set({"nickname": new_nickname})
+    
+    @property
+    def description(self):
+        """Allows to directly set the object's description. Use as a property"""
+        if "description" in self.data:
+            return self.data["description"]
+        return None
+        
+    @description.setter
+    def description(self,new_description):
+        """Sets the object's description"""
+        self.set({"description": new_description})
+    

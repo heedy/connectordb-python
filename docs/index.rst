@@ -4,6 +4,7 @@ ConnectorDB Python Client
 .. toctree::
    :maxdepth: 2
 
+   tutorial
    connectordb
    logger
    query

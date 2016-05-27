@@ -24,11 +24,13 @@ class subscriber:
     def reset(self):
         self.msg = None
         self.stream = None
+        self.callnumber = 0
 
     def subscribe_callback(self, stream, datapoints):
         logging.info("Got message: %s:: %s", stream, json.dumps(datapoints))
         self.msg = datapoints
         self.stream = stream
+        self.callnumber +=1
 
         return self.returnvalue
 
@@ -142,6 +144,9 @@ class TestConnectorDB(unittest.TestCase):
 
         usrdb.user.nickname = "myuser"
         self.assertEqual(self.db("python_test").nickname, "myuser")
+        
+        usrdb.user.description = "Hello World!"
+        self.assertEqual(self.db("python_test").description, "Hello World!")
 
         self.assertRaises(connectordb.AuthenticationError, self.usr.set,
                           {"admin": "Hello"})
@@ -159,6 +164,9 @@ class TestConnectorDB(unittest.TestCase):
 
         dev.nickname = "test nickname"
         self.assertEqual(db("python_test/mydevice").nickname, "test nickname")
+        self.assertEqual(dev.enabled, False)
+        dev.enabled = True
+        self.assertEqual(db("python_test/mydevice").enabled, True)
 
         apikey = dev.apikey
         newkey = dev.reset_apikey()
@@ -291,13 +299,17 @@ class TestConnectorDB(unittest.TestCase):
         time.sleep(0.1)
 
         self.assertTrue(subs.msg[0]["d"] == 100)
+        self.assertTrue(subs.callnumber == 1)
         self.assertTrue(subs2.msg is None)
+        self.assertTrue(subs2.callnumber == 0)
 
         s.insert(3000)
         time.sleep(0.1)
 
         self.assertTrue(subs.msg[0]["d"] == 3000)
+        self.assertTrue(subs.callnumber == 2)
         self.assertTrue(subs2.msg[0]["d"] == 3000)
+        self.assertTrue(subs2.callnumber == 1)
         subs2.reset()
         subs.reset()
 
@@ -324,7 +336,18 @@ class TestConnectorDB(unittest.TestCase):
 
         mds = mdconn["mystream"]
         mds.create({"type": "string"})
+        
+        with self.assertRaises(connectordb.AuthenticationError):
+            s.insert("devices can not write streams they don't own")
+        
+        # Unless it is a downlink
         mds.downlink = True
+        
+        s.insert("hi!")
+        self.assertTrue(0== len(s))
+        self.assertTrue(1== s.length(downlink=True))
+        
+        self.assertTrue(s(downlink=True)[0]["d"]== "hi!")
 
         subs = subscriber()
         subs.returnvalue = True
@@ -334,7 +357,7 @@ class TestConnectorDB(unittest.TestCase):
         s.subscribe(subs2.subscribe_callback)
 
         time.sleep(0.2)
-        s.insert("hello!")
+        s.append("hello!")
         time.sleep(0.2)
 
         self.assertTrue(subs.msg[0]["d"] == "hello!")
@@ -344,6 +367,7 @@ class TestConnectorDB(unittest.TestCase):
         s.unsubscribe()
 
         self.assertTrue(1, len(s))
+        self.assertTrue(2, s.length(True))
 
     def test_multicreate(self):
         mydevice = self.usrdb.user["mydevice"]

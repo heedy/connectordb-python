@@ -89,6 +89,18 @@ class Device(ConnectorObject):
     def role(self,new_role):
         """ Attempts to set the device's role"""
         self.set({"role": new_role})
+        
+    @property
+    def enabled(self):
+        """ gets whether the device is enabled. This allows a device to notify ConnectorDB when
+        it is active and when it is not running"""
+        if "enabled" in self.data:
+            return self.data["enabled"]
+        return None
+    @enabled.setter
+    def enabled(self,new_enabled):
+        """Sets the enabled state of the device"""
+        self.set({"enabled": new_enabled})
 
     @property
     def user(self):
