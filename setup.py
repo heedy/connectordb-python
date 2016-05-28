@@ -9,14 +9,14 @@ from setuptools import setup, find_packages
 
 
 setup(name='ConnectorDB',
-      version='0.3.0a8',  # The a.b of a.b.c follows connectordb version. c is the version of python. Remember to change __version__ in __init__
+      version='0.3.0',  # The a.b of a.b.c follows connectordb version. c is the version of python. Remember to change __version__ in __init__
       description='ConnectorDB Python Interface',
       author='ConnectorDB contributors',
       license="MIT",
       author_email='support@connectordb.com',
       url='https://github.com/connectordb/connectordb-python',
       packages=find_packages(exclude=['contrib', 'docs', '*_test']),
-      classifiers=['Development Status :: 3 - Alpha',
+      classifiers=[#'Development Status :: 3 - Alpha',
                       'Intended Audience :: Developers',
                       'Intended Audience :: Science/Research',
                       'License :: OSI Approved :: MIT License',
