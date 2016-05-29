@@ -57,3 +57,5 @@ docs/_build/
 target/
 
 test.db
+
+publish_commands
