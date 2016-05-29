@@ -23,7 +23,7 @@ class Logger(object):
     def __init__(self, database_file_path, on_create=None, apikey=None, onsync=None, onsyncfail=None, syncraise=False):
         """Logger is started by passing its database file, and an optional callback which is run if the database
         is not initialized, allowing setup code to be only run once.
-        
+
         The on_create callback can optionally be used to initialize the necessary api keys and such.
         If on_create returns False or raises an error, the uninitialized database file will be removed."""
         self.database = apsw.Connection(database_file_path)
@@ -113,17 +113,18 @@ class Logger(object):
         with self.synclock:
             self.database.close()
 
-    def addStream(self, streamname, schema=None):
+    def addStream(self, streamname, schema=None, **kwargs):
         """Adds the given stream to the logger. Requires an active connection to the ConnectorDB database.
 
         If a schema is not specified, loads the stream from the database. If a schema is specified, and the stream
-        does not exist, creates the stream."""
+        does not exist, creates the stream. You can also add stream properties such as description or nickname to be added
+        during creation."""
 
         stream = self.connectordb[streamname]
 
         if not stream.exists():
             if schema is not None:
-                stream.create(schema)
+                stream.create(schema,**kwargs)
             else:
                 raise Exception(
                     "The stream '%s' was not found" % (streamname, ))
@@ -155,7 +156,7 @@ class Logger(object):
         c = self.database.cursor()
         c.execute("INSERT INTO cache VALUES (?,?,?);",
                   (streamname, time.time(), value))
-                  
+
     def insert_many(self,data_dict):
         """ Inserts data into the cache, if the data is a dict of the form {streamname: [{"t": timestamp,"d":data,...]}"""
         c = self.database.cursor()
@@ -172,7 +173,7 @@ class Logger(object):
             c.execute("ROLLBACK;")
             raise
         c.exectute("COMMIT;")
-        
+
 
     def sync(self):
         """Attempt to sync with the ConnectorDB server"""

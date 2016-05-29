@@ -39,7 +39,7 @@ class TestLogger(unittest.TestCase):
             l.data = "Hello World!!!"
             l.syncperiod = 3.3
 
-            l.addStream("mystream", {"type": "string"})
+            l.addStream("mystream", {"type": "string"},nickname="My nickname")
 
             haderror = False
             try:
@@ -53,6 +53,7 @@ class TestLogger(unittest.TestCase):
         l = Logger("test.db", on_create=test_create)
         l.ping()
         self.assertTrue(s.exists())
+        self.assertTrue(s.nickname == "My nickname")
 
         self.assertEqual("logger_test/mydevice", l.name)
         self.assertEqual(self.apikey, l.apikey)
