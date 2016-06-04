@@ -164,9 +164,9 @@ class TestConnectorDB(unittest.TestCase):
 
         dev.nickname = "test nickname"
         self.assertEqual(db("python_test/mydevice").nickname, "test nickname")
-        self.assertEqual(dev.enabled, False)
-        dev.enabled = True
-        self.assertEqual(db("python_test/mydevice").enabled, True)
+        self.assertEqual(dev.enabled, True)
+        dev.enabled = False
+        self.assertEqual(db("python_test/mydevice").enabled, False)
 
         apikey = dev.apikey
         newkey = dev.reset_apikey()

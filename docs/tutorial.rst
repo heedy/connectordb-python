@@ -201,11 +201,6 @@ ConnectorDB comes with two devices by default, the user and meta device. The met
     False
     >>> newdevice.create()
     
-The newly created device is disabled by default, so let's enable it
-
-    >>> newdevice.enabled
-    False
-    >>> newdevice.enabled = True
     
 Now let's log in as that device:
 
