@@ -5,7 +5,7 @@ python:
 
 install:
     - pip install -r requirements.txt
-    - wget -O cdb.tar.gz https://connectordb.com/www/connectordb0.3.0a1.tar.gz
+    - wget -O cdb.tar.gz https://github.com/connectordb/connectordb/releases/download/v0.3.0a1/connectordb0.3.0a1.tar.gz
     - tar xvzf cdb.tar.gz
     - export PATH=$TRAVIS_BUILD_DIR/bin:$PATH
     - pip install coveralls
