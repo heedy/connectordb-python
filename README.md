@@ -11,6 +11,10 @@ pip install connectordb
 
 If on ubuntu, you might want to install `python-apsw` before running the above command. You can look at the dependencies in setup.py.
 
+# [Tutorial](https://connectordb-python.readthedocs.io/en/latest/tutorial.html)
+
+Seriously, start with the tutorial. The samples below will be confusing until you are done with it!
+
 ## Logging
 The simplest, and most common task is logging data. Suppose we have a little weather station that gives us the temperature every minute.
 
