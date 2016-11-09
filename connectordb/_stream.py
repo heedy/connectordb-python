@@ -48,8 +48,8 @@ def query_maker(t1=None, t2=None, limit=None, i1=None, i2=None, transform=None, 
 
 
 class Stream(ConnectorObject):
-    def create(self, schema, **kwargs):
-        """Creates a stream given a JSON schema encoded as a python dict. You can also add other properties
+    def create(self, schema="{}", **kwargs):
+        """Creates a stream given an optional JSON schema encoded as a python dict. You can also add other properties
         of the stream, such as the icon, datatype or description. Create accepts both a string schema and
         a dict-encoded schema."""
         if isinstance(schema,basestring):
@@ -242,10 +242,29 @@ class Stream(ConnectorObject):
 
     @property
     def schema(self):
-        """Returns the JSON schema of the stream as a python dict"""
+        """Returns the JSON schema of the stream as a python dict."""
         if "schema" in self.data:
             return json.loads(self.data["schema"])
         return None
+
+    @property
+    def sschema(self):
+        """Returns the JSON schema of the stream as a string"""
+        if "schema" in self.data:
+            return self.data["schema"]
+        return None
+
+    @schema.setter
+    def schema(self, schema):
+        """sets the stream's schema. An empty schema is "{}". The schemas allow you to set a specific data type. 
+        Both python dicts and strings are accepted."""
+        if isinstance(schema,basestring):
+            strschema = schema
+            schema = json.loads(schema)
+        else:
+            strschema = json.dumps(schema)
+        Draft4Validator.check_schema(schema)
+        self.set({"schema": strschema})
 
     @property
     def user(self):

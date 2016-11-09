@@ -9,8 +9,8 @@ import connectordb
 from jsonschema import SchemaError
 
 # Allows debugging the websocket
-import websocket
-websocket.enableTrace(True)
+#import websocket
+#websocket.enableTrace(True)
 
 TEST_URL = "http://localhost:8000"
 
@@ -183,7 +183,7 @@ class TestConnectorDB(unittest.TestCase):
         initialstreams = len(self.usrdb.streams())
         s = self.usrdb["mystream"]
         self.assertFalse(s.exists())
-        s.create({"type": "string"},datatype="string.text")
+        s.create(datatype="string.text")
         self.assertTrue(s.exists())
         self.assertEqual(len(self.usrdb.streams()), initialstreams + 1)
 
@@ -201,6 +201,10 @@ class TestConnectorDB(unittest.TestCase):
         self.assertEqual(s.downlink, True)
         s.datatype="lol.lol"
         self.assertEqual(s.datatype,"lol.lol")
+
+        self.assertEqual(s.sschema,'{}')
+        s.schema = '{"type": "string"}'
+        self.assertEqual(s.sschema,'{"type":"string"}')
 
         s.delete()
         self.assertFalse(s.exists())
