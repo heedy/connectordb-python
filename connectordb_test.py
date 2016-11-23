@@ -10,13 +10,14 @@ from jsonschema import SchemaError
 
 # Allows debugging the websocket
 #import websocket
-#websocket.enableTrace(True)
+# websocket.enableTrace(True)
 
 TEST_URL = "http://localhost:8000"
 
 
 class subscriber:
     # Special class that allows tests of subscriptions
+
     def __init__(self):
         self.reset()
         self.returnvalue = None
@@ -30,12 +31,13 @@ class subscriber:
         logging.info("Got message: %s:: %s", stream, json.dumps(datapoints))
         self.msg = datapoints
         self.stream = stream
-        self.callnumber +=1
+        self.callnumber += 1
 
         return self.returnvalue
 
 
 class TestConnectorDB(unittest.TestCase):
+
     def setUp(self):
         self.db = connectordb.ConnectorDB("test", "test", url=TEST_URL)
         self.db.user.public = False
@@ -74,8 +76,8 @@ class TestConnectorDB(unittest.TestCase):
         self.assertTrue(len(i["interpolators"]) > 1)
         self.assertTrue(len(i["transforms"]) > 1)
 
-        self.assertTrue(len(self.db.users())> 1)
-        self.assertRaises(connectordb.AuthenticationError,self.usrdb.users)
+        self.assertTrue(len(self.db.users()) > 1)
+        self.assertRaises(connectordb.AuthenticationError, self.usrdb.users)
 
     def test_counting(self):
         db = self.db
@@ -131,6 +133,8 @@ class TestConnectorDB(unittest.TestCase):
         self.assertEqual(self.usrdb.user.name, "python_test")
         self.usrdb.user.email = "testemail@change"
         self.assertEqual(self.usrdb.user.email, "testemail@change")
+        self.usrdb.user.icon = "material:person"
+        self.assertEqual(self.usrdb.user.icon, "material:person")
 
         self.usrdb.user.set_password("newpass")
         usrdb = connectordb.ConnectorDB("python_test", "newpass", url=TEST_URL)
@@ -144,7 +148,7 @@ class TestConnectorDB(unittest.TestCase):
 
         usrdb.user.nickname = "myuser"
         self.assertEqual(self.db("python_test").nickname, "myuser")
-        
+
         usrdb.user.description = "Hello World!"
         self.assertEqual(self.db("python_test").description, "Hello World!")
 
@@ -160,7 +164,8 @@ class TestConnectorDB(unittest.TestCase):
         self.assertEqual(3, len(db.user.devices()))
 
         dev = connectordb.ConnectorDB(db.user["mydevice"].apikey, url=TEST_URL)
-        self.assertRaises(connectordb.AuthenticationError, dev.user.devices)  # Device has no access to other devices
+        # Device has no access to other devices
+        self.assertRaises(connectordb.AuthenticationError, dev.user.devices)
 
         dev.nickname = "test nickname"
         self.assertEqual(db("python_test/mydevice").nickname, "test nickname")
@@ -179,7 +184,7 @@ class TestConnectorDB(unittest.TestCase):
     def test_stream(self):
         self.assertRaises(SchemaError, self.usrdb["mystream"].create,
                           {"type": "blah blah"})
-        self.assertEqual(self.usrdb.role,"user")
+        self.assertEqual(self.usrdb.role, "user")
         initialstreams = len(self.usrdb.streams())
         s = self.usrdb["mystream"]
         self.assertFalse(s.exists())
@@ -192,19 +197,19 @@ class TestConnectorDB(unittest.TestCase):
 
         self.assertEqual(s.ephemeral, False)
         self.assertEqual(s.downlink, False)
-        self.assertEqual(s.datatype,"string.text")
+        self.assertEqual(s.datatype, "string.text")
         s.ephemeral = True
         self.assertEqual(s.ephemeral, True)
         self.assertEqual(s.downlink, False)
         s.downlink = True
         self.assertEqual(s.ephemeral, True)
         self.assertEqual(s.downlink, True)
-        s.datatype="lol.lol"
-        self.assertEqual(s.datatype,"lol.lol")
+        s.datatype = "lol.lol"
+        self.assertEqual(s.datatype, "lol.lol")
 
-        self.assertEqual(s.sschema,'{}')
+        self.assertEqual(s.sschema, '{}')
         s.schema = '{"type": "string"}'
-        self.assertEqual(s.sschema,'{"type":"string"}')
+        self.assertEqual(s.sschema, '{"type":"string"}')
 
         s.delete()
         self.assertFalse(s.exists())
@@ -241,7 +246,8 @@ class TestConnectorDB(unittest.TestCase):
         self.assertEqual(s.schema["type"], "string")
 
     def test_struct(self):
-        # This test is specifically to make sure that structs are correctly sent back (this was a bug in connectordb)
+        # This test is specifically to make sure that structs are correctly
+        # sent back (this was a bug in connectordb)
         s = self.usrdb["mystream"]
 
         s.create({
@@ -340,18 +346,18 @@ class TestConnectorDB(unittest.TestCase):
 
         mds = mdconn["mystream"]
         mds.create({"type": "string"})
-        
+
         with self.assertRaises(connectordb.AuthenticationError):
             s.insert("devices can not write streams they don't own")
-        
+
         # Unless it is a downlink
         mds.downlink = True
-        
+
         s.insert("hi!")
-        self.assertTrue(0== len(s))
-        self.assertTrue(1== s.length(downlink=True))
-        
-        self.assertTrue(s(downlink=True)[0]["d"]== "hi!")
+        self.assertTrue(0 == len(s))
+        self.assertTrue(1 == s.length(downlink=True))
+
+        self.assertTrue(s(downlink=True)[0]["d"] == "hi!")
 
         subs = subscriber()
         subs.returnvalue = True
@@ -378,26 +384,26 @@ class TestConnectorDB(unittest.TestCase):
         mydevice.create(streams={
             "stream1": {
                 "nickname": "My Train",
-                "schema":"{\"type\":\"string\"}"
+                "schema": "{\"type\":\"string\"}"
             }
         })
         self.assertTrue(mydevice.exists())
         self.assertTrue(mydevice["stream1"].exists())
-        self.assertEqual(mydevice["stream1"].nickname,"My Train")
+        self.assertEqual(mydevice["stream1"].nickname, "My Train")
 
-        self.db("myuser").create("my@email","mypass",description="choo choo",devices={
+        self.db("myuser").create("my@email", "mypass", description="choo choo", devices={
             "device1": {
-                "streams":{
+                "streams": {
                     "stream1": {
                         "nickname": "My Train",
-                        "schema":"{\"type\":\"string\"}"
+                        "schema": "{\"type\":\"string\"}"
                     }
                 }
             }
-        },streams={
+        }, streams={
             "mstream1": {
                 "nickname": "My Train2",
-                "schema":"{\"type\":\"string\"}"
+                "schema": "{\"type\":\"string\"}"
             }
         })
 

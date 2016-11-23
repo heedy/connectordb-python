@@ -77,16 +77,30 @@ class ConnectorObject(object):
     def nickname(self, new_nickname):
         """Sets the object's user-friendly nickname"""
         self.set({"nickname": new_nickname})
-    
+
     @property
     def description(self):
         """Allows to directly set the object's description. Use as a property"""
         if "description" in self.data:
             return self.data["description"]
         return None
-        
+
     @description.setter
-    def description(self,new_description):
+    def description(self, new_description):
         """Sets the object's description"""
         self.set({"description": new_description})
-    
+
+    @property
+    def icon(self):
+        """Allows to directly get and set the icon. An icon can be URLencoded (data:image/)
+        or use an icon from the material design set (https://material.io/icons/), 
+        prepended with "material:", and with spaces replaced by underscores.
+        """
+        if "icon" in self.data:
+            return self.data["icon"]
+        return None
+
+    @icon.setter
+    def icon(self, new_icon):
+        """Sets the object's icon"""
+        self.set({"icon": new_icon})
