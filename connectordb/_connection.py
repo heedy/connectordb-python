@@ -19,6 +19,7 @@ CRUD_PATH = "crud/"
 
 # Returned when the given credentials are not accepted by the server
 class AuthenticationError(Exception):
+
     def __init__(self, value):
         self.value = value
 
@@ -28,6 +29,7 @@ class AuthenticationError(Exception):
 
 # Returned when the server gives an unhandled error code
 class ServerError(Exception):
+
     def __init__(self, value):
         self.value = value
 
@@ -36,6 +38,7 @@ class ServerError(Exception):
 
 
 class DatabaseConnection(object):
+
     def __init__(self, user_or_apikey=None, user_password=None, url="https://connectordb.com"):
 
         # Set up the API URL
@@ -43,6 +46,7 @@ class DatabaseConnection(object):
             url = "https://" + url
         if not url.endswith("/"):
             url = url + "/"
+        self.baseurl = url
         self.url = urljoin(url, "/api/v1/")
 
         # Set up a session, which allows us to reuse connections
@@ -50,12 +54,18 @@ class DatabaseConnection(object):
         self.r.headers.update({'content-type': 'application/json'})
 
         # Prepare the websocket
-        self.ws = WebsocketHandler(self.url,None)
+        self.ws = WebsocketHandler(self.url, None)
 
         # Set the authentication if any
-        self.setauth(user_or_apikey,user_password)
+        self.setauth(user_or_apikey, user_password)
 
-    def setauth(self,user_or_apikey=None, user_password=None):
+        # Now set up the login path so we know what we're logged in as
+        if user_password is not None:
+            self.path = user_or_apikey + "/user"
+        else:
+            self.path = self.ping()
+
+    def setauth(self, user_or_apikey=None, user_password=None):
         """ setauth sets the authentication header for use in the session.
         It is for use when apikey is updated or something of the sort, such that
         there is a seamless experience. """
@@ -64,7 +74,8 @@ class DatabaseConnection(object):
             # ConnectorDB allows login using both basic auth or an apikey url param.
             # The python client uses basic auth for all logins
             if user_password is None:
-                # Login by api key - the basic auth login uses "" user and apikey as password
+                # Login by api key - the basic auth login uses "" user and
+                # apikey as password
                 user_password = user_or_apikey
                 user_or_apikey = ""
             auth = HTTPBasicAuth(user_or_apikey, user_password)

@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+import json
+import os
 
 from ._connectorobject import ConnectorObject
 
@@ -9,7 +11,9 @@ import json
 try:
     unicode = unicode
 except NameError:
-    basestring = (str,bytes)
+    basestring = (str, bytes)
+
+DATAPOINT_INSERT_LIMIT = 5000
 
 
 def query_maker(t1=None, t2=None, limit=None, i1=None, i2=None, transform=None, downlink=False):
@@ -33,7 +37,7 @@ def query_maker(t1=None, t2=None, limit=None, i1=None, i2=None, transform=None, 
             params["i1"] = i1
         if i2 is not None:
             params["i2"] = i2
-    
+
     # If no range is given, query whole stream
     if len(params) == 0:
         params["i1"] = 0
@@ -43,16 +47,17 @@ def query_maker(t1=None, t2=None, limit=None, i1=None, i2=None, transform=None, 
         params["transform"] = transform
     if downlink:
         params["downlink"] = True
-        
+
     return params
 
 
 class Stream(ConnectorObject):
+
     def create(self, schema="{}", **kwargs):
         """Creates a stream given an optional JSON schema encoded as a python dict. You can also add other properties
         of the stream, such as the icon, datatype or description. Create accepts both a string schema and
         a dict-encoded schema."""
-        if isinstance(schema,basestring):
+        if isinstance(schema, basestring):
             strschema = schema
             schema = json.loads(schema)
         else:
@@ -80,6 +85,21 @@ class Stream(ConnectorObject):
         to the same timestamp as the most recent datapoint hat already exists in the database, and the insert will
         succeed.
         """
+
+        # To be safe, we split into chunks
+        while (len(datapoint_array) > DATAPOINT_INSERT_LIMIT):
+            # We insert datapoints in chunks of a couple thousand so that they
+            # fit in the insert size limit of ConnectorDB
+            a = datapoint_array[:DATAPOINT_INSERT_LIMIT]
+
+            if restamp:
+                self.db.update(self.path + "/data", a)
+            else:
+                self.db.create(self.path + "/data", a)
+
+            # Clear the written datapoints
+            datapoint_array = datapoint_array[DATAPOINT_INSERT_LIMIT:]
+
         if restamp:
             self.db.update(self.path + "/data", datapoint_array)
         else:
@@ -97,8 +117,8 @@ class Stream(ConnectorObject):
 
         """
         self.insert_array([{"d": data}], restamp=True)
-        
-    def append(self,data):
+
+    def append(self, data):
         """ Same as insert, using the pythonic array name """
         self.insert(data)
 
@@ -162,10 +182,11 @@ class Stream(ConnectorObject):
             stream(transform="sum | if last")
 
         """
-        params = query_maker(t1, t2, limit, i1, i2, transform,downlink)
+        params = query_maker(t1, t2, limit, i1, i2, transform, downlink)
 
         # In order to avoid accidental requests for full streams, ConnectorDB does not permit requests
-        # without any url parameters, so we set i1=0 if we are requesting the full stream
+        # without any url parameters, so we set i1=0 if we are requesting the
+        # full stream
         if len(params) == 0:
             params["i1"] = 0
 
@@ -190,9 +211,9 @@ class Stream(ConnectorObject):
 
         # The query is a slice - return the range
         return self(i1=getrange.start, i2=getrange.stop)
-        
-    def length(self,downlink=False):
-        return int(self.db.read(self.path + "/data", {"q": "length","downlink":downlink}).text)
+
+    def length(self, downlink=False):
+        return int(self.db.read(self.path + "/data", {"q": "length", "downlink": downlink}).text)
 
     def __len__(self):
         """taking len(stream) returns the number of datapoints saved within the database for the stream"""
@@ -201,6 +222,29 @@ class Stream(ConnectorObject):
     def __repr__(self):
         """Returns a string representation of the stream"""
         return "[Stream:%s]" % (self.path, )
+
+    def export(self, directory):
+        """Exports the stream to the given directory. The directory can't exist. 
+        You can later import this device by running import_stream on a device.
+        """
+        if os.path.exists(directory):
+            raise FileExistsError(
+                "The stream export directory already exists")
+
+        os.mkdir(directory)
+
+        # Write the stream's info
+        with open(os.path.join(directory, "stream.json"), "w") as f:
+            json.dump(self.data, f)
+
+        # Now write the stream's data
+        with open(os.path.join(directory, "data.json"), "w") as f:
+            json.dump(self[:], f)
+
+        # And if the stream is a downlink, write the downlink data
+        if self.downlink:
+            with open(os.path.join(directory, "downlink.json"), "w") as f:
+                json.dump(self(i1=0, i2=0, downlink=True), f)
 
     # -----------------------------------------------------------------------
     # Following are getters and setters of the stream's properties
@@ -211,8 +255,9 @@ class Stream(ConnectorObject):
         if "datatype" in self.data:
             return self.data["datatype"]
         return ""
+
     @datatype.setter
-    def datatype(self,set_datatype):
+    def datatype(self, set_datatype):
         self.set({"datatype": set_datatype})
 
     @property
@@ -258,7 +303,7 @@ class Stream(ConnectorObject):
     def schema(self, schema):
         """sets the stream's schema. An empty schema is "{}". The schemas allow you to set a specific data type. 
         Both python dicts and strings are accepted."""
-        if isinstance(schema,basestring):
+        if isinstance(schema, basestring):
             strschema = schema
             schema = json.loads(schema)
         else:
@@ -277,7 +322,7 @@ class Stream(ConnectorObject):
         splitted_path = self.path.split("/")
 
         return Device(self.db,
-                              splitted_path[0] + "/" + splitted_path[1])
+                      splitted_path[0] + "/" + splitted_path[1])
 
 
 # The import has to go on the bottom because py3 imports are annoying

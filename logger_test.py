@@ -5,12 +5,14 @@ import time
 import os
 
 import connectordb
-from connectordb.logger import Logger, DATAPOINT_INSERT_LIMIT
+from connectordb.logger import Logger
+from connectordb import DATAPOINT_INSERT_LIMIT
 
 TEST_URL = "http://localhost:8000"
 
 
 class TestLogger(unittest.TestCase):
+
     def setUp(self):
         self.db = connectordb.ConnectorDB("test", "test", url=TEST_URL)
         self.usr = self.db("logger_test")
@@ -39,7 +41,7 @@ class TestLogger(unittest.TestCase):
             l.data = "Hello World!!!"
             l.syncperiod = 3.3
 
-            l.addStream("mystream", {"type": "string"},nickname="My nickname")
+            l.addStream("mystream", {"type": "string"}, nickname="My nickname")
 
             haderror = False
             try:
@@ -163,9 +165,9 @@ class TestLogger(unittest.TestCase):
 
         l.addStream("mystream")
 
-        l.insert("mystream","test1")
-        l.insert("mystream","test2")
-        l.insert("mystream","test3")
+        l.insert("mystream", "test1")
+        l.insert("mystream", "test2")
+        l.insert("mystream", "test3")
 
         l.sync()
 
@@ -186,11 +188,11 @@ class TestLogger(unittest.TestCase):
 
         l.addStream("mystream")
 
-        l.insert("mystream","test1")
-        l.insert("mystream","test2")
+        l.insert("mystream", "test1")
+        l.insert("mystream", "test2")
 
         l.cleardata()
-        self.assertEqual(len(l),0)
+        self.assertEqual(len(l), 0)
 
 if __name__ == "__main__":
     unittest.main()

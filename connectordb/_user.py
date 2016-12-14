@@ -1,9 +1,12 @@
 from __future__ import absolute_import
+import json
+import os
 
 from ._connectorobject import ConnectorObject
 
 
 class User(ConnectorObject):
+
     def create(self, email, password, role="user", public=True, **kwargs):
         """Creates the given user - using the passed in email and password.
 
@@ -61,6 +64,87 @@ class User(ConnectorObject):
         """Returns a string representation of the user"""
         return "[User:%s]" % (self.path, )
 
+    def export(self, directory):
+        """Exports the ConnectorDB user into the given directory.
+        The resulting export can be imported by using the import command (cdb.import(directory)),
+
+        Note that Python cannot export passwords, since the REST API does
+        not expose password hashes. Therefore, the imported user will have
+        password same as username.
+
+        The user export function is different than device and stream exports because
+        it outputs a format compatible directly with connectorDB's import functionality:
+
+            connectordb import <mydatabase> <directory>
+
+        This also means that you can export multiple users into the same directory without issue
+        """
+
+        exportInfoFile = os.path.join(directory, "connectordb.json")
+        if os.path.exists(directory):
+            # Ensure that there is an export there already, and it is version 1
+            if not os.path.exists(exportInfoFile):
+                raise FileExistsError(
+                    "The export directory already exsits, and is not a ConnectorDB export.")
+            with open(exportInfoFile) as f:
+                exportInfo = json.load(f)
+            if exportInfo["Version"] != 1:
+                raise ValueError(
+                    "Could not export to directory: incompatible export versions.")
+        else:
+            # The folder doesn't exist. Make it.
+            os.mkdir(directory)
+
+            with open(exportInfoFile, "w") as f:
+                json.dump(
+                    {"Version": 1, "ConnectorDB": self.db.get("meta/version").text}, f)
+
+        # Now we create the user directory
+        udir = os.path.join(directory, self.name)
+        os.mkdir(udir)
+
+        # Write the user's info
+        with open(os.path.join(udir, "user.json"), "w") as f:
+            json.dump(self.data, f)
+
+        # Now export the devices one by one
+        for d in self.devices():
+            d.export(os.path.join(udir, d.name))
+
+    def import_device(self, directory):
+        """Imports a device from the given directory. You export the device
+        by using device.export()
+
+        There are two special cases: user and meta devices. 
+        If the device name is meta, import_device will not do anything. 
+        If the device name is "user", import_device will overwrite the user device
+        even if it exists already.
+        """
+
+        # read the device's info
+        with open(os.path.join(directory, "device.json"), "r") as f:
+            ddata = json.load(f)
+
+        d = self[ddata["name"]]
+
+        dname = ddata["name"]
+        del ddata["name"]
+
+        if dname == "meta":
+            return
+        elif dname == "user":
+            d.set(ddata)
+        elif d.exists():
+            raise ValueError("The device " + d.name + " already exists")
+        else:
+            d.create(**ddata)
+
+        # Now import all of the streams
+        for name in os.listdir(directory):
+            sdir = os.path.join(directory, name)
+            if os.path.isdir(sdir):
+                d.import_stream(sdir)
+
     # -----------------------------------------------------------------------
     # Following are getters and setters of the user's properties
 
@@ -87,7 +171,7 @@ class User(ConnectorObject):
         return None
 
     @public.setter
-    def public(self,new_public):
+    def public(self, new_public):
         """Attempts to set whether the user is public"""
         self.set({"public": new_public})
 
@@ -100,7 +184,7 @@ class User(ConnectorObject):
         return None
 
     @role.setter
-    def role(self,new_role):
+    def role(self, new_role):
         """ Attempts to set the user's role"""
         self.set({"role": new_role})
 

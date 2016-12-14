@@ -1,10 +1,12 @@
 from __future__ import absolute_import
+import json
+import os
 
 from ._connection import DatabaseConnection
 
 from ._device import Device
 from ._user import User
-from ._stream import Stream
+from ._stream import Stream, DATAPOINT_INSERT_LIMIT
 
 CONNECTORDB_URL = "https://connectordb.com"
 
@@ -22,6 +24,7 @@ class ConnectorDB(Device):
         print cdb.path
 
     """
+
     def __init__(self, user_or_apikey=None, user_password=None, url=CONNECTORDB_URL):
 
         db = DatabaseConnection(user_or_apikey, user_password, url)
@@ -38,8 +41,9 @@ class ConnectorDB(Device):
                 # Reset the auth to be apikey
                 db.setauth(self.apikey)
         else:
-            # We logged in as a device - we have to ping the server to get our name
-            Device.__init__(self, db, db.ping())
+            # We logged in as a device - we have to ping the server to get our
+            # name
+            Device.__init__(self, db, db.path)
 
     def __call__(self, path):
         """Enables getting arbitrary users/devices/streams in a simple way. Just call the object
@@ -109,18 +113,49 @@ class ConnectorDB(Device):
         return "[ConnectorDB:%s]" % (self.path, )
 
     def users(self):
-            """Returns the list of users in the database"""
-            result = self.db.read("", {"q": "ls"})
+        """Returns the list of users in the database"""
+        result = self.db.read("", {"q": "ls"})
 
-            if result is None or result.json() is None:
-                return []
-            users = []
-            for u in result.json():
-                usr = self(u["name"])
-                usr.metadata = u
-                users.append(usr)
-            return users
+        if result is None or result.json() is None:
+            return []
+        users = []
+        for u in result.json():
+            usr = self(u["name"])
+            usr.metadata = u
+            users.append(usr)
+        return users
 
     def ping(self):
         """Pings the ConnectorDB server. Useful for checking if the connection is valid"""
         return self.db.ping()
+
+    def import_users(self, directory):
+        """Imports version 1 of ConnectorDB export. These exports can be generated
+        by running user.export(dir), possibly on multiple users.
+        """
+        exportInfoFile = os.path.join(directory, "connectordb.json")
+        with open(exportInfoFile) as f:
+            exportInfo = json.load(f)
+        if exportInfo["Version"] != 1:
+            raise ValueError("Not able to read this import version")
+
+        # Now we list all the user directories
+        for name in os.listdir(directory):
+            udir = os.path.join(directory, name)
+            if os.path.isdir(udir):
+                # Let's read in the user
+                with open(os.path.join(udir, "user.json")) as f:
+                    usrdata = json.load(f)
+
+                u = self(usrdata["name"])
+                if u.exists():
+                    raise ValueError("The user " + name + " already exists")
+
+                del usrdata["name"]
+                u.create(password=name, **usrdata)
+
+                # Now read all of the user's devices
+                for dname in os.listdir(udir):
+                    ddir = os.path.join(udir, dname)
+                    if os.path.isdir(ddir):
+                        u.import_device(ddir)

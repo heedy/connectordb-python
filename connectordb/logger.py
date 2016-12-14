@@ -9,10 +9,8 @@ import os
 import json
 from jsonschema import validate
 
-from ._connectordb import ConnectorDB, CONNECTORDB_URL
+from ._connectordb import ConnectorDB, CONNECTORDB_URL, DATAPOINT_INSERT_LIMIT
 
-# The maximum number of datapoints to insert in one query
-DATAPOINT_INSERT_LIMIT = 5000
 
 class Logger(object):
     """Logger enables logging datapoints with periodic synchronization to a ConnectorDB database.
@@ -29,7 +27,8 @@ class Logger(object):
         self.database = apsw.Connection(database_file_path)
         c = self.database.cursor()
 
-        # Create the tables which will make up the cache if they don't exist yet
+        # Create the tables which will make up the cache if they don't exist
+        # yet
         c.execute(
             "CREATE TABLE IF NOT EXISTS cache (stream TEXT, timestamp REAL, jsondata TEXT);")
         c.execute(
@@ -55,7 +54,8 @@ class Logger(object):
         # Load the database metadata into variables
         c.execute(
             "SELECT apikey,serverurl,lastsynctime,syncperiod FROM metadata;")
-        self.__apikey, self.__serverurl, self.__lastsync, self.__syncperiod = next(c)
+        self.__apikey, self.__serverurl, self.__lastsync, self.__syncperiod = next(
+            c)
 
         # Load the streams that are being logged
         c.execute("SELECT * FROM streams;")
@@ -82,10 +82,12 @@ class Logger(object):
         if on_create is not None and row_number == 0:
             try:
                 if False == on_create(self):
-                    raise Exception("on_create returned False - logger is invalid")
+                    raise Exception(
+                        "on_create returned False - logger is invalid")
             except:
                 # If there was a failure to run on_create, delete the database file,
-                # so that runing the program again will not use the invalid file.
+                # so that runing the program again will not use the invalid
+                # file.
                 self.database.close()
                 os.remove(database_file_path)
                 raise
@@ -124,7 +126,7 @@ class Logger(object):
 
         if not stream.exists():
             if schema is not None:
-                stream.create(schema,**kwargs)
+                stream.create(schema, **kwargs)
             else:
                 raise Exception(
                     "The stream '%s' was not found" % (streamname, ))
@@ -157,23 +159,23 @@ class Logger(object):
         c.execute("INSERT INTO cache VALUES (?,?,?);",
                   (streamname, time.time(), value))
 
-    def insert_many(self,data_dict):
+    def insert_many(self, data_dict):
         """ Inserts data into the cache, if the data is a dict of the form {streamname: [{"t": timestamp,"d":data,...]}"""
         c = self.database.cursor()
         c.execute("BEGIN TRANSACTION;")
         try:
             for streamname in data_dict:
                 if streamname not in self.streams:
-                    raise Exception("The stream '%s' was not found" % (streamname, ))
+                    raise Exception(
+                        "The stream '%s' was not found" % (streamname, ))
                 for dp in data_dict[streamname]:
                     validate(dp["d"], self.streams[streamname])
                     c.execute("INSERT INTO cache VALUES (?,?,?);",
-                                (streamname, dp["t"], dp["d"]))
+                              (streamname, dp["t"], dp["d"]))
         except:
             c.execute("ROLLBACK;")
             raise
         c.exectute("COMMIT;")
-
 
     def sync(self):
         """Attempt to sync with the ConnectorDB server"""
@@ -204,20 +206,26 @@ class Logger(object):
                                       (stream, len(datapointArray)))
 
                         while (len(datapointArray) > DATAPOINT_INSERT_LIMIT):
-                            # We insert datapoints in chunks of a couple thousand so that they fit in the insert size limit of ConnectorDB
-                            s.insert_array(datapointArray[:DATAPOINT_INSERT_LIMIT])
+                            # We insert datapoints in chunks of a couple
+                            # thousand so that they fit in the insert size
+                            # limit of ConnectorDB
+                            s.insert_array(
+                                datapointArray[:DATAPOINT_INSERT_LIMIT])
 
                             # Clear the written datapoints
-                            datapointArray = datapointArray[DATAPOINT_INSERT_LIMIT:]
+                            datapointArray = datapointArray[
+                                DATAPOINT_INSERT_LIMIT:]
 
-                            # If there was no error inserting, delete the datapoints from the cache
+                            # If there was no error inserting, delete the
+                            # datapoints from the cache
                             c.execute(
                                 "DELETE FROM cache WHERE stream=? AND timestamp <?",
                                 (stream, datapointArray[0]["t"]))
 
                         s.insert_array(datapointArray)
 
-                        # If there was no error inserting, delete the datapoints from the cache
+                        # If there was no error inserting, delete the
+                        # datapoints from the cache
                         c.execute(
                             "DELETE FROM cache WHERE stream=? AND timestamp <=?",
                             (stream, datapointArray[-1]["t"]))
@@ -262,8 +270,8 @@ class Logger(object):
                     "Logger: Start called on a syncer that is already running")
                 return
 
-        self.sync() # Attempt a sync right away
-        self.__setsync() # Set up background sync
+        self.sync()  # Attempt a sync right away
+        self.__setsync()  # Set up background sync
 
     def stop(self):
         """Stops the background synchronization thread"""

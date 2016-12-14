@@ -5,6 +5,8 @@ import time
 import json
 import logging
 import connectordb
+import shutil
+import os
 
 from jsonschema import SchemaError
 
@@ -59,6 +61,11 @@ class TestConnectorDB(unittest.TestCase):
             self.db("myuser").delete()
         except:
             pass
+        try:
+            self.db("pyexport").delete()
+        except:
+            pass
+
         self.db.close()
 
     def test_authfail(self):
@@ -414,6 +421,44 @@ class TestConnectorDB(unittest.TestCase):
         self.assertTrue(usr["device1"]["stream1"].exists())
 
         usr.delete()
+
+    def test_importexport(self):
+        if os.path.exists("pyexport"):
+            shutil.rmtree("pyexport")
+        u = self.db("pyexport")
+        u.create("pyexport@test", "usr", devices={
+            "mydevice": {
+                "streams": {
+                    "mystream": {
+                        "schema": "{\"type\":\"string\"}",
+                        "downlink": True
+                    }
+                }
+            }
+        })
+
+        mdconn = connectordb.ConnectorDB(u["mydevice"].apikey, url=TEST_URL)
+        mdconn("pyexport/mydevice/mystream").insert("Hello World!")
+        self.db("pyexport/mydevice/mystream").insert("in da downlink")
+
+        # Export the user
+        u.export("pyexport")
+
+        # Delete the User
+        u.delete()
+
+        self.assertFalse(u.exists())
+
+        # Import the user!
+        self.db.import_users("pyexport")
+
+        self.assertTrue(u.exists())
+
+        # Make sure the stream data was created correctly
+        self.assertEqual(self.db("pyexport/mydevice/mystream")
+                         [0]["d"], "Hello World!")
+        self.assertEqual(self.db("pyexport/mydevice/mystream")(i1=0, i2=1, downlink=True)
+                         [0]["d"], "in da downlink")
 
 
 if __name__ == "__main__":
