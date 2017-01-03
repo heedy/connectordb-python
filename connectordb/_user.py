@@ -56,6 +56,27 @@ class User(ConnectorObject):
             devices.append(dev)
         return devices
 
+    def streams(self, public=False, downlink=False, visible=True):
+        """Returns the list of streams that belong to the user.
+        The list can optionally be filtered in 3 ways:
+            - public: when True, returns only streams belonging to public devices
+            - downlink: If True, returns only downlink streams
+            - visible: If True (default), returns only streams of visible devices
+        """
+        result = self.db.read(self.path, {"q": "streams",
+                                          "public": str(public).lower(),
+                                          "downlink": str(downlink).lower(),
+                                          "visible": str(visible).lower()})
+
+        if result is None or result.json() is None:
+            return []
+        streams = []
+        for d in result.json():
+            s = self[d["device"]][d["name"]]
+            s.metadata = d
+            streams.append(s)
+        return streams
+
     def __getitem__(self, device_name):
         """Gets the child device by name"""
         return Device(self.db, self.path + "/" + device_name)
@@ -66,7 +87,7 @@ class User(ConnectorObject):
 
     def export(self, directory):
         """Exports the ConnectorDB user into the given directory.
-        The resulting export can be imported by using the import command (cdb.import(directory)),
+        The resulting export can be imported by using the import command(cdb.import(directory)),
 
         Note that Python cannot export passwords, since the REST API does
         not expose password hashes. Therefore, the imported user will have
@@ -75,7 +96,7 @@ class User(ConnectorObject):
         The user export function is different than device and stream exports because
         it outputs a format compatible directly with connectorDB's import functionality:
 
-            connectordb import <mydatabase> <directory>
+            connectordb import < mydatabase > <directory >
 
         This also means that you can export multiple users into the same directory without issue
         """
@@ -115,8 +136,8 @@ class User(ConnectorObject):
         """Imports a device from the given directory. You export the device
         by using device.export()
 
-        There are two special cases: user and meta devices. 
-        If the device name is meta, import_device will not do anything. 
+        There are two special cases: user and meta devices.
+        If the device name is meta, import_device will not do anything.
         If the device name is "user", import_device will overwrite the user device
         even if it exists already.
         """
@@ -164,7 +185,7 @@ class User(ConnectorObject):
     def public(self):
         """gets whether the user is public
         (this means different things based on connectordb permissions setup - connectordb.com
-        has this be whether the user is publically visible. Devices are individually public/private.)
+        has this be whether the user is publically visible. Devices are individually public / private.)
         """
         if "public" in self.data:
             return self.data["public"]

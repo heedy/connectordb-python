@@ -162,6 +162,18 @@ class TestConnectorDB(unittest.TestCase):
         self.assertRaises(connectordb.AuthenticationError, self.usr.set,
                           {"admin": "Hello"})
 
+    def test_userstreams(self):
+        db = self.usrdb
+
+        dev = db.user["mydevice"]
+        dev.create()
+
+        dev["mystream"].create(downlink=True)
+        dev["mystream2"].create()
+
+        self.assertEqual(db.user.streams(downlink=True)[0].path,
+                         dev["mystream"].path)
+
     def test_device(self):
         db = self.usrdb
         self.assertEqual(len(db.user.devices()), 2)
