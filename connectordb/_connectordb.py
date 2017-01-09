@@ -8,7 +8,9 @@ from ._device import Device
 from ._user import User
 from ._stream import Stream, DATAPOINT_INSERT_LIMIT
 
-CONNECTORDB_URL = "https://connectordb.com"
+# By default assume that a ConnectorDB server is running on localhost with
+# default configuration
+CONNECTORDB_URL = "http://localhost:3124"
 
 
 class ConnectorDB(Device):

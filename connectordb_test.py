@@ -14,7 +14,7 @@ from jsonschema import SchemaError
 #import websocket
 # websocket.enableTrace(True)
 
-TEST_URL = "http://localhost:8000"
+TEST_URL = connectordb.CONNECTORDB_URL
 
 
 class subscriber:
