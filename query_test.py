@@ -5,10 +5,11 @@ import unittest
 import connectordb
 from connectordb.query import *
 
-TEST_URL = "http://localhost:8000"
+TEST_URL = connectordb.CONNECTORDB_URL
 
 
 class TestQuery(unittest.TestCase):
+
     def setUp(self):
         self.db = connectordb.ConnectorDB("test", "test", url=TEST_URL)
         self.usr = self.db("query_test")
@@ -97,10 +98,10 @@ class TestQuery(unittest.TestCase):
                 "d": {"temperature":  73
                       }}, {"t": 4,
                            "d": {"temperature": 84}},
-                  {"t": 6,
-                   "d": {"temperature": 84
-                         }}, {"t": 8,
-                              "d": {"temperature": 81}}])
+                {"t": 6,
+                 "d": {"temperature": 84
+                       }}, {"t": 8,
+                            "d": {"temperature": 81}}])
 
     def test_ydataset(self):
         s1 = self.udb["temperature"]

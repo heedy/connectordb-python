@@ -16,15 +16,16 @@ logging.basicConfig(level=logging.DEBUG)
 
 import connectordb
 
-cdb = connectordb.ConnectorDB("test","test","localhost:8000")
+cdb = connectordb.ConnectorDB("test", "test")
 
 s = cdb["reconnect_test"]
 
 if not s.exists():
-    s.create({"type":"string"})
+    s.create({"type": "string"})
 
-def subscriber(stream,data):
-    print(stream,data)
+
+def subscriber(stream, data):
+    print(stream, data)
 
 s.subscribe(subscriber)
 
