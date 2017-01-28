@@ -6,6 +6,7 @@ from ._connectorobject import ConnectorObject
 
 from jsonschema import Draft4Validator
 import json
+import time
 
 # https://github.com/oxplot/fysom/issues/1
 try:
@@ -116,7 +117,7 @@ class Stream(ConnectorObject):
             s.insert("Hello World!")
 
         """
-        self.insert_array([{"d": data}], restamp=True)
+        self.insert_array([{"d": data, "t": time.time()}], restamp=True)
 
     def append(self, data):
         """ Same as insert, using the pythonic array name """
