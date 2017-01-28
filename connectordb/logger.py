@@ -201,6 +201,16 @@ class Logger(object):
                         datapointArray.append(
                             {"t": dp[1],
                              "d": json.loads(dp[2])})
+
+                    # First, check if the data already inserted has newer timestamps,
+                    # and in that case, assume that there was an error, and remove the datapoints
+                    # with an older timestamp, so that we don't have an error when syncing
+                    if len(s) > 0:
+                        newtime = s[-1]["t"]
+                        while (len(datapointArray) > 0 and datapointArray[0]["t"] < newtime):
+                            logging.debug("Datapoint exists with older timestamp. Removing the datapoint.")
+                            datapointArray = datapointArray[1:]
+
                     if len(datapointArray) > 0:
                         logging.debug("%s: syncing %i datapoints" %
                                       (stream, len(datapointArray)))

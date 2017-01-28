@@ -194,5 +194,32 @@ class TestLogger(unittest.TestCase):
         l.cleardata()
         self.assertEqual(len(l), 0)
 
+    def test_overwrite(self):
+        l = Logger("test.db")
+        l.serverurl = TEST_URL
+        l.apikey = self.apikey
+
+        l.addStream("mystream",{"type": "string"})
+
+        s = l.connectordb["mystream"]
+
+        l.insert("mystream","will_be_overwritten")
+        l.insert("mystream","will_be_overwritten2")
+        s.insert("ONO - it exists!")
+        l.insert("mystream","hi!")
+
+        l.sync()
+
+        self.assertEqual(2, len(s))
+
+        l.insert("mystream","will_be_overwritten")
+        l.insert("mystream","will_be_overwritten2")
+        s.insert("ONO - it exists!")
+
+        l.sync()
+
+        self.assertEqual(3, len(s))
+
+
 if __name__ == "__main__":
     unittest.main()
