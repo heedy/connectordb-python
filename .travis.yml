@@ -13,7 +13,7 @@ install:
 
 before_script:
     - connectordb create testdb --test
-    - connectordb -l=ERROR start testdb &
+    - connectordb -l=ERROR start testdb
 
 script: nosetests --with-coverage --cover-package=connectordb
 
