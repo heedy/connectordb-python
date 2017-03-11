@@ -140,7 +140,6 @@ Running ConnectorDB tests requires initalizing ConnectorDB in test mode:
 ```
 connectordb create testdb --test
 connectordb start testdb
-connectordb run testdb
 ```
 
 Once ConnectorDB is running:

@@ -5,15 +5,14 @@ python:
 
 install:
     - pip install -r requirements.txt
-    - wget -O cdb.tar.gz https://github.com/connectordb/connectordb/releases/download/v0.3.0a1/connectordb0.3.0a1.tar.gz
+    - wget -O cdb.tar.gz https://connectordb.io/download/connectordb_server_current_linux_amd64.tar.gz
     - tar xvzf cdb.tar.gz
     - export PATH=$TRAVIS_BUILD_DIR/bin:$PATH
     - pip install coveralls
 
 before_script:
     - connectordb create testdb --test
-    - connectordb start testdb
-    - connectordb -l=ERROR run testdb &
+    - connectordb -l=ERROR start testdb &
 
 script: nosetests --with-coverage --cover-package=connectordb
 
