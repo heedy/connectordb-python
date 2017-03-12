@@ -103,7 +103,7 @@ class TestQuery(unittest.TestCase):
                        }}, {"t": 8,
                             "d": {"temperature": 81}}])
 
-    def test_ydataset(self):
+    def test_xdataset(self):
         s1 = self.udb["temperature"]
         s2 = self.udb["mood_rating"]
 

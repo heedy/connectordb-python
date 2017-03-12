@@ -129,18 +129,18 @@ class Dataset(object):
 
     """
 
-    def __init__(self, cdb, x=None, t1=None, t2=None, dt=None, limit=None, i1=None, i2=None, transform=None, itransform=None):
+    def __init__(self, cdb, x=None, t1=None, t2=None, dt=None, limit=None, i1=None, i2=None, transform=None, posttransform=None):
         """In order to begin dataset generation, you need to specify the reference time range or stream.
 
         To generate a T-dataset::
             d = Dataset(cdb, t1=start, t2=end, dt=tchange)
-        To generate a Y-dataset::
+        To generate an X-dataset::
             d = Dataset(cdb,"mystream", i1=start, i2=end)
 
         Note that everywhere you insert a stream name, you are also free to insert Stream objects
         or even Merge queries. The Dataset query in ConnectorDB supports merges natively for each field.
 
-        The only "special" field in this query is the "itransform". This is a special transform to run on the
+        The only "special" field in this query is the "posttransform". This is a special transform to run on the
         entire row of data after the all of the interpolations complete.
         """
         self.cdb = cdb
@@ -156,6 +156,9 @@ class Dataset(object):
             self.query["dt"] = dt
         else:
             raise Exception("Dataset must have either x or dt parameter")
+        
+        if posttransform is not None:
+            self.query["posttransform"] = posttransform
 
         self.query["dataset"] = {}
 
