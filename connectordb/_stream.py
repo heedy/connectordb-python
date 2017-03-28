@@ -3,6 +3,7 @@ import json
 import os
 
 from ._connectorobject import ConnectorObject
+from ._datapointarray import DatapointArray
 
 from jsonschema import Draft4Validator
 import json
@@ -191,7 +192,7 @@ class Stream(ConnectorObject):
         if len(params) == 0:
             params["i1"] = 0
 
-        return self.db.read(self.path + "/data", params).json()
+        return DatapointArray(self.db.read(self.path + "/data", params).json())
 
     def __getitem__(self, getrange):
         """Allows accessing the stream just as if it were just one big python array.
@@ -239,13 +240,13 @@ class Stream(ConnectorObject):
             json.dump(self.data, f)
 
         # Now write the stream's data
-        with open(os.path.join(directory, "data.json"), "w") as f:
-            json.dump(self[:], f)
+        # We sort it first, since older versions of ConnectorDB had a bug
+        # where sometimes datapoints would be returned out of order.
+        self[:].sort().writeJSON(os.path.join(directory, "data.json"))
 
         # And if the stream is a downlink, write the downlink data
         if self.downlink:
-            with open(os.path.join(directory, "downlink.json"), "w") as f:
-                json.dump(self(i1=0, i2=0, downlink=True), f)
+            self(i1=0, i2=0, downlink=True).sort().writeJSON(os.path.join(directory, "downlink.json"))
 
     # -----------------------------------------------------------------------
     # Following are getters and setters of the stream's properties

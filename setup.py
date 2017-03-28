@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='ConnectorDB',
-      version='0.3.4',  # The a.b of a.b.c follows connectordb version. c is the version of python. Remember to change __version__ in __init__
+      version='0.3.5',  # The a.b of a.b.c follows connectordb version. c is the version of python. Remember to change __version__ in __init__
       description='ConnectorDB Python Interface',
       author='ConnectorDB contributors',
       license="Apache-2.0",

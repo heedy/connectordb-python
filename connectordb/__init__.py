@@ -39,5 +39,6 @@ from __future__ import absolute_import
 
 from ._connectordb import *
 from ._connection import AuthenticationError, ServerError
+from ._datapointarray import DatapointArray
 
-__version__ = "0.3.2"
+__version__ = "0.3.5"

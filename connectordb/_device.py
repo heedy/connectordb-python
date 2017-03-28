@@ -5,6 +5,7 @@ import os
 from ._connection import DatabaseConnection
 from ._connectorobject import ConnectorObject
 
+from ._datapointarray import DatapointArray
 
 class Device(ConnectorObject):
 
@@ -93,15 +94,7 @@ class Device(ConnectorObject):
         sown = d[s.name]
 
         # read the stream's info
-        with open(os.path.join(directory, "data.json"), "r") as f:
-            data = json.load(f)
-            # In some cases, older versions of ConnectorDB had a bug where if
-            # the server crashed during a batch update, timestamps would not be consistent. 
-            # To work around this issue when exporting from older versions,
-            # we first sort the dataset, just in case.
-            data.sort(key=lambda d: d["t"])
-            
-            sown.insert_array(data)
+        sown.insert_array(DatapointArray().loadExport(directory))
 
         # Now we MIGHT be able to recover the downlink data,
         # only if we are not logged in as the device that the stream is being inserted into

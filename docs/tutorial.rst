@@ -105,13 +105,12 @@ Let's perform analysis of the whole stream. We can get the full stream's data by
 
 For our current analysis, we don't need the timestamps:
     
-    >>> list(map(lambda x: x["d"],productivity[:]))
+    >>> productivity[:].d()
     [8, 7, 5, 9, 3, 1, 5, 4, 8]
     
-Let's find the mean:
+The returned data is of a special list class that has some useful extensions, such as directly computing the data array. Let's find the mean:
 
-    >>> import statistics
-    >>> statistics.mean(map(lambda x: x["d"],productivity[:]))
+    >>> productivity[:].mean()
     5.555555555555555
     
 If we only care about the mean, it is inefficient to query the entire dataset from ConnectorDB, only to perform an aggregation that returns a single value. We can use PipeScript to perform
@@ -120,7 +119,7 @@ the aggregation on the server:
     >>> productivity(transform="mean | if last")
     [{'t': 1464334185.668, 'd': 5.555555555555555}]
 
-You can `go here for a PipeScript tutorial <https://connectordb.github.io/pipescript/>`_ (PipeScript is ConnectorDB's transform engine)
+You can `go here for a PipeScript tutorial <https://connectordb.io/docs/pipescript/index.html>`_ (PipeScript is ConnectorDB's transform engine)
 
 Using the call syntax, you can also query ConnectorDB by time. To get the datapoints from the last minute:
 
@@ -129,8 +128,8 @@ Using the call syntax, you can also query ConnectorDB by time. To get the datapo
 Finally, let's plot the rating vs time:
     
     >>> from pylab import *
-    >>> t,d = zip(*map(lambda x: (datetime.fromtimestamp(x["t"]),x["d"]),productivity[:]))
-    >>> plot(t,d)
+    >>> data = productivity[:]
+    >>> plot(data.t(),data.d())
     >>> show()
 
 Subscribing
