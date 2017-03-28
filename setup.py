@@ -12,7 +12,7 @@ setup(name='ConnectorDB',
       version='0.3.4',  # The a.b of a.b.c follows connectordb version. c is the version of python. Remember to change __version__ in __init__
       description='ConnectorDB Python Interface',
       author='ConnectorDB contributors',
-      license="MIT",
+      license="Apache-2.0",
       author_email='support@connectordb.com',
       url='https://github.com/connectordb/connectordb-python',
       packages=find_packages(exclude=['contrib', 'docs', '*_test']),
